@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg-base:       #f4f4f5;
+  --bg-surface:    #ffffff;
+  --bg-raised:     #f3f4f6;
+  --bg-input:      #e8e8e8;
+  --border:        rgba(0,0,0,0.08);
+  --border-md:     rgba(0,0,0,0.10);
+  --border-strong: rgba(0,0,0,0.14);
+  --text:          #111111;
+  --text-2:        #3f3f46;
+  --hover:         rgba(0,0,0,0.04);
+  --hover-md:      rgba(0,0,0,0.06);
+}
+
+.dark {
+  --bg-base:       #0a0a0a;
+  --bg-surface:    #141414;
+  --bg-raised:     #1c1c1c;
+  --bg-input:      #242424;
+  --border:        rgba(255,255,255,0.05);
+  --border-md:     rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.10);
+  --text:          #ffffff;
+  --text-2:        #d4d4d8;
+  --hover:         rgba(255,255,255,0.03);
+  --hover-md:      rgba(255,255,255,0.05);
+}
+
+@theme inline {
+  /* Aliases canónicos de Tailwind → apuntan a las variables de tema */
+  --color-background:    var(--bg-base);
+  --color-surface:       var(--bg-surface);
+  --color-raised:        var(--bg-raised);
+  --color-input-bg:      var(--bg-input);
+  --color-foreground:    var(--text);
+  --color-foreground-2:  var(--text-2);
+  --color-border:        var(--border);
+  --color-border-md:     var(--border-md);
+  --color-border-strong: var(--border-strong);
+  --color-hover:         var(--hover);
+  --color-hover-md:      var(--hover-md);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
