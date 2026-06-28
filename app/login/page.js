@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -39,8 +39,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-black tracking-widest text-red-600">RED<span className="text-foreground">LINE</span></h1>
-          <p className="text-zinc-500 text-sm mt-1 tracking-widest uppercase">Gimnasio Integral</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/imagenes pinkline/Pinkline-tagline.svg" alt="Pinkline" className="h-28 w-auto mx-auto object-contain" />
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
@@ -51,7 +51,7 @@ export default function LoginPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="w-full mt-1 bg-surface border border-border-strong text-foreground rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-red-600 transition-colors"
+              className="w-full mt-1 bg-surface border border-border-strong text-foreground rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-pink-500 transition-colors"
               placeholder="tu@correo.com"
             />
           </div>
@@ -62,17 +62,17 @@ export default function LoginPage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              className="w-full mt-1 bg-surface border border-border-strong text-foreground rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-red-600 transition-colors"
+              className="w-full mt-1 bg-surface border border-border-strong text-foreground rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-pink-500 transition-colors"
               placeholder="••••••••"
             />
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-pink-400 text-sm">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors tracking-wider uppercase text-sm"
+            className="w-full bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors tracking-wider uppercase text-sm"
           >
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>

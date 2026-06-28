@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
@@ -180,7 +180,7 @@ function HistorialRutinas({ sesiones }) {
                           <div key={sesion.id}>
                             {idx > 0 && <div className="border-t border-border mb-4" />}
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-[11px] font-bold text-red-500 uppercase tracking-wider">{sesion.rutina_nombre}</span>
+                              <span className="text-[11px] font-bold text-pink-400 uppercase tracking-wider">{sesion.rutina_nombre}</span>
                               <span className="text-[9px] text-zinc-500">{formatFechaCorta(sesion.fecha)}</span>
                             </div>
                             <div className="space-y-2">
@@ -268,7 +268,7 @@ function SeccionPeso({ alumnoId }) {
               {ultimo.peso_kg} <span className="text-sm font-normal text-zinc-500">kg</span>
               {registros.length > 1 && (() => {
                 const diff = parseFloat(ultimo.peso_kg) - parseFloat(primero.peso_kg)
-                const color = diff < 0 ? 'text-green-500' : diff > 0 ? 'text-red-400' : 'text-zinc-500'
+                const color = diff < 0 ? 'text-green-500' : diff > 0 ? 'text-pink-300' : 'text-zinc-500'
                 return (
                   <span className={`text-sm font-bold ml-2 ${color}`}>
                     {diff > 0 ? '+' : ''}{diff.toFixed(1)} kg
@@ -305,26 +305,26 @@ function SeccionPeso({ alumnoId }) {
               value={peso}
               onChange={e => setPeso(e.target.value)}
               placeholder="kg"
-              className="w-24 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-600 transition-colors"
+              className="w-24 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 transition-colors"
             />
             <input
               type="date"
               value={fecha}
               onChange={e => setFecha(e.target.value)}
-              className="flex-1 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-600 transition-colors"
+              className="flex-1 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 transition-colors"
             />
           </div>
         </div>
         <button
           type="submit"
           disabled={guardando}
-          className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors shrink-0"
+          className="bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors shrink-0"
         >
           {guardando ? '…' : 'Agregar'}
         </button>
       </form>
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-pink-300">{error}</p>}
 
       {/* Últimos registros */}
       {registros.length > 0 && (
@@ -335,7 +335,7 @@ function SeccionPeso({ alumnoId }) {
               <div className="flex items-center gap-3">
                 <span className="font-bold text-foreground">{r.peso_kg} kg</span>
                 <button onClick={() => eliminar(r.id)}
-                  className="text-zinc-600 hover:text-red-400 transition-colors">✕</button>
+                  className="text-zinc-600 hover:text-pink-300 transition-colors">✕</button>
               </div>
             </div>
           ))}
@@ -393,9 +393,9 @@ export default function AlumnoProgreso() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-foreground">
-          Hola, <span className="text-red-500">{alumno.nombre?.split(' ')[0]}</span>
+          Hola, <span className="text-pink-400">{alumno.nombre?.split(' ')[0]}</span>
         </h1>
-        <p className="text-xs text-zinc-500 mt-1">Tu progreso en Redline</p>
+        <p className="text-xs text-zinc-500 mt-1">Tu progreso en Pinkline</p>
       </div>
 
       {/* Card de plan */}
@@ -427,7 +427,7 @@ export default function AlumnoProgreso() {
             {alumno.vencimiento_plan ? (
               <div className={`text-sm font-bold ${
                 diasRestantesVal !== null && diasRestantesVal <= 7
-                  ? 'text-red-500'
+                  ? 'text-pink-400'
                   : 'text-foreground'
               }`}>
                 {formatFechaCorta(alumno.vencimiento_plan)}
@@ -445,7 +445,7 @@ export default function AlumnoProgreso() {
 
         {alumno.coach?.nombre && (
           <div className="mt-4 pt-4 border-t border-border flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-red-900/30 flex items-center justify-center text-[10px] font-bold text-red-400 shrink-0">
+            <div className="w-7 h-7 rounded-full bg-pink-900/30 flex items-center justify-center text-[10px] font-bold text-pink-300 shrink-0">
               {alumno.coach.nombre.split(' ').map(n => n[0]).join('').slice(0,2)}
             </div>
             <div>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -14,11 +14,11 @@ function Field({ label, name, type = 'text', required = false, value, onChange }
   return (
     <div>
       <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1.5">
-        {label} {required && <span className="text-red-500">*</span>}
+        {label} {required && <span className="text-pink-400">*</span>}
       </label>
       <input
         type={type} name={name} value={value} onChange={onChange} required={required}
-        className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-red-600 transition-colors"
+        className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
       />
     </div>
   )
@@ -172,7 +172,7 @@ export default function NuevoAlumno() {
                     onClick={() => setForm(f => ({ ...f, tipo_clase: t }))}
                     className={`flex-1 py-2.5 rounded-lg border text-sm font-medium transition-all ${
                       form.tipo_clase === t
-                        ? 'bg-red-600/15 border-red-600/40 text-red-500'
+                        ? 'bg-pink-500/15 border-pink-500/40 text-pink-400'
                         : 'border-border text-zinc-500 hover:text-foreground bg-raised'
                     }`}
                   >
@@ -186,7 +186,7 @@ export default function NuevoAlumno() {
             <div>
               <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1.5">Días por semana</label>
               <select name="plan" value={form.plan} onChange={handleChange}
-                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-red-600">
+                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500">
                 <option value="1x/sem">1 día</option>
                 <option value="2x/sem">2 días</option>
                 <option value="3x/sem">3 días</option>
@@ -199,7 +199,7 @@ export default function NuevoAlumno() {
             <div>
               <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1.5">Coach asignado</label>
               <select name="coach_id" value={form.coach_id} onChange={handleChange}
-                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-red-600">
+                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500">
                 <option value="">Sin asignar</option>
                 {coaches.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
               </select>
@@ -207,12 +207,12 @@ export default function NuevoAlumno() {
             <div className="sm:col-span-2">
               <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1.5">Objetivos</label>
               <textarea name="objetivos" value={form.objetivos} onChange={handleChange} rows={3}
-                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-red-600 resize-none" />
+                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 resize-none" />
             </div>
             <div className="sm:col-span-2">
               <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1.5">Restricciones médicas</label>
               <textarea name="restricciones_medicas" value={form.restricciones_medicas} onChange={handleChange} rows={3}
-                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-red-600 resize-none" />
+                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 resize-none" />
             </div>
           </div>
         </div>
@@ -222,7 +222,7 @@ export default function NuevoAlumno() {
           <div className="flex items-center justify-between mb-1">
             <div className="text-xs text-zinc-500 uppercase tracking-widest">Horario semanal fijo</div>
             <button type="button" onClick={agregarHorario}
-              className="text-xs text-red-500 hover:text-red-400 transition-colors font-medium">
+              className="text-xs text-pink-400 hover:text-pink-300 transition-colors font-medium">
               + Agregar día
             </button>
           </div>
@@ -241,7 +241,7 @@ export default function NuevoAlumno() {
                   <button
                     type="button"
                     onClick={() => eliminarHorario(i)}
-                    className="text-zinc-600 hover:text-red-400 transition-colors w-6 h-6 flex items-center justify-center rounded text-sm"
+                    className="text-zinc-600 hover:text-pink-300 transition-colors w-6 h-6 flex items-center justify-center rounded text-sm"
                     title="Eliminar este día"
                   >
                     ✕
@@ -254,7 +254,7 @@ export default function NuevoAlumno() {
                     <select
                       value={h.dia}
                       onChange={e => handleHorarioChange(i, 'dia', e.target.value)}
-                      className="w-full bg-surface border border-border text-foreground rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:border-red-600"
+                      className="w-full bg-surface border border-border text-foreground rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:border-pink-500"
                     >
                       {DIAS.map(d => <option key={d} value={d}>{DIAS_LABEL_LARGO[d]}</option>)}
                     </select>
@@ -265,7 +265,7 @@ export default function NuevoAlumno() {
                       type="time"
                       value={h.hora}
                       onChange={e => handleHorarioChange(i, 'hora', e.target.value)}
-                      className="w-full bg-surface border border-border text-foreground rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:border-red-600"
+                      className="w-full bg-surface border border-border text-foreground rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:border-pink-500"
                     />
                   </div>
                   <div className="col-span-2">
@@ -281,7 +281,7 @@ export default function NuevoAlumno() {
                           onClick={() => handleHorarioChange(i, 'tipo', val)}
                           className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
                             h.tipo === val
-                              ? 'bg-red-600/15 border-red-600/40 text-red-500'
+                              ? 'bg-pink-500/15 border-pink-500/40 text-pink-400'
                               : 'border-border text-zinc-500 hover:text-foreground'
                           }`}
                         >
@@ -296,7 +296,7 @@ export default function NuevoAlumno() {
           </div>
         </div>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && <p className="text-pink-400 text-sm">{error}</p>}
 
         <div className="flex gap-3">
           <button type="button" onClick={() => router.back()}
@@ -304,7 +304,7 @@ export default function NuevoAlumno() {
             Cancelar
           </button>
           <button type="submit" disabled={loading}
-            className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold px-8 py-2.5 rounded-lg transition-colors text-sm">
+            className="bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white font-bold px-8 py-2.5 rounded-lg transition-colors text-sm">
             {loading ? 'Guardando...' : 'Guardar alumno'}
           </button>
         </div>

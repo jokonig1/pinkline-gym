@@ -119,7 +119,7 @@ function HistorialRutinas({ sesiones }) {
 
                             {/* Nombre de rutina + fecha */}
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-[11px] font-bold text-red-500 uppercase tracking-wider leading-tight">
+                              <span className="text-[11px] font-bold text-pink-400 uppercase tracking-wider leading-tight">
                                 {sesion.rutina_nombre}
                               </span>
                               <span className="text-[9px] text-zinc-500 shrink-0 ml-1">
@@ -184,7 +184,7 @@ function Field({ label, field, type = 'text', editando, form, alumno, onChange }
           type={type}
           value={form[field] || ''}
           onChange={e => onChange(field, e.target.value)}
-          className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-600"
+          className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500"
         />
       ) : (
         <div className="text-sm text-foreground">{alumno[field] || <span className="text-zinc-500">—</span>}</div>
@@ -335,7 +335,7 @@ export default function DetalleAlumno() {
 
       {/* Header alumno */}
       <div className="bg-surface border border-border rounded-xl p-5 mb-4 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-red-900/30 flex items-center justify-center text-xl font-black text-red-400">
+        <div className="w-14 h-14 rounded-full bg-pink-900/30 flex items-center justify-center text-xl font-black text-pink-300">
           {alumno.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
         </div>
         <div className="flex-1">
@@ -354,7 +354,7 @@ export default function DetalleAlumno() {
                 Cancelar
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
+                className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
             </>
@@ -368,7 +368,7 @@ export default function DetalleAlumno() {
       </div>
 
       {errorSave && (
-        <p className="text-red-500 text-sm mb-4 bg-red-900/20 border border-red-900/30 rounded-lg px-4 py-2">
+        <p className="text-pink-400 text-sm mb-4 bg-pink-900/20 border border-pink-900/30 rounded-lg px-4 py-2">
           {errorSave}
         </p>
       )}
@@ -410,7 +410,7 @@ export default function DetalleAlumno() {
                 value={form.objetivos || ''}
                 onChange={e => handleFieldChange('objetivos', e.target.value)}
                 rows={3}
-                className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-600 resize-none"
+                className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 resize-none"
               />
             ) : (
               <div className="text-sm text-foreground">{alumno.objetivos || <span className="text-zinc-500">—</span>}</div>
@@ -423,7 +423,7 @@ export default function DetalleAlumno() {
                 value={form.restricciones_medicas || ''}
                 onChange={e => handleFieldChange('restricciones_medicas', e.target.value)}
                 rows={3}
-                className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-600 resize-none"
+                className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 resize-none"
               />
             ) : (
               <div className="text-sm text-foreground">{alumno.restricciones_medicas || <span className="text-zinc-500">—</span>}</div>
@@ -438,7 +438,7 @@ export default function DetalleAlumno() {
           <div className="text-xs text-zinc-500 uppercase tracking-widest">Horario semanal fijo</div>
           {editando && (
             <button type="button" onClick={agregarHorario}
-              className="text-xs text-red-500 hover:text-red-400 transition-colors font-medium">
+              className="text-xs text-pink-400 hover:text-pink-300 transition-colors font-medium">
               + Agregar día
             </button>
           )}
@@ -454,28 +454,28 @@ export default function DetalleAlumno() {
                   <div className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
                     <select value={h.dia} disabled={h._eliminar}
                       onChange={e => setHorario(idx, 'dia', e.target.value)}
-                      className="bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-red-600 disabled:text-zinc-500">
+                      className="bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-pink-500 disabled:text-zinc-500">
                       {DIAS.map(d => <option key={d} value={d}>{DIAS_LABEL_LARGO[d]}</option>)}
                     </select>
                     <div className="flex gap-2 items-center">
                       <select value={h.hora?.slice(0,5) || ''} disabled={h._eliminar}
                         onChange={e => setHorario(idx, 'hora', e.target.value)}
-                        className="flex-1 bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-red-600 disabled:text-zinc-500">
+                        className="flex-1 bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-pink-500 disabled:text-zinc-500">
                         {HORAS.map(ho => <option key={ho} value={ho}>{ho}</option>)}
                       </select>
                       <button type="button" onClick={() => marcarEliminar(idx)}
-                        className="sm:hidden w-7 h-7 flex items-center justify-center rounded-lg text-sm shrink-0 text-zinc-600 hover:text-red-400">
+                        className="sm:hidden w-7 h-7 flex items-center justify-center rounded-lg text-sm shrink-0 text-zinc-600 hover:text-pink-300">
                         {h._eliminar ? '↩' : '✕'}
                       </button>
                     </div>
                     <select value={h.tipo} disabled={h._eliminar}
                       onChange={e => setHorario(idx, 'tipo', e.target.value)}
-                      className="col-span-2 sm:col-span-1 bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-red-600 disabled:text-zinc-500">
+                      className="col-span-2 sm:col-span-1 bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-pink-500 disabled:text-zinc-500">
                       <option value="personalizado">Personalizado</option>
                       <option value="semipersonalizado">Semi Personalizado</option>
                     </select>
                     <button type="button" onClick={() => marcarEliminar(idx)}
-                      className="hidden sm:flex w-7 h-7 items-center justify-center rounded-lg text-sm transition-all text-zinc-600 hover:text-red-400 hover:bg-red-900/20"
+                      className="hidden sm:flex w-7 h-7 items-center justify-center rounded-lg text-sm transition-all text-zinc-600 hover:text-pink-300 hover:bg-pink-900/20"
                       title={h._eliminar ? 'Restaurar' : 'Eliminar'}>
                       {h._eliminar ? '↩' : '✕'}
                     </button>
@@ -483,7 +483,7 @@ export default function DetalleAlumno() {
                 ) : (
                   <div className="flex items-center gap-3 py-2 border-b border-border last:border-b-0">
                     <span className="text-sm font-medium text-foreground capitalize w-24 shrink-0">{h.dia}</span>
-                    <span className="text-sm font-bold text-red-500 w-14 shrink-0">{h.hora?.slice(0,5)}</span>
+                    <span className="text-sm font-bold text-pink-400 w-14 shrink-0">{h.hora?.slice(0,5)}</span>
                     <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
                       h.tipo === 'personalizado'
                         ? 'bg-purple-500/10 text-purple-400'

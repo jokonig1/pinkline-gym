@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
@@ -75,7 +75,7 @@ export default function AlumnoPerfil() {
 
       {/* Header — avatar + nombre + estado */}
       <div className="bg-surface border border-border rounded-xl p-5 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-red-900/30 flex items-center justify-center text-xl font-black text-red-400 shrink-0">
+        <div className="w-14 h-14 rounded-full bg-pink-900/30 flex items-center justify-center text-xl font-black text-pink-300 shrink-0">
           {initials}
         </div>
         <div className="flex-1 min-w-0">
@@ -110,14 +110,14 @@ export default function AlumnoPerfil() {
             {alumno.vencimiento_plan ? (
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-bold ${
-                  diasRestantesVal !== null && diasRestantesVal <= 7 ? 'text-red-500' : 'text-foreground'
+                  diasRestantesVal !== null && diasRestantesVal <= 7 ? 'text-pink-400' : 'text-foreground'
                 }`}>
                   {formatFecha(alumno.vencimiento_plan)}
                 </span>
                 {diasRestantesVal !== null && (
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     diasRestantesVal <= 0
-                      ? 'bg-red-500/10 text-red-500'
+                      ? 'bg-pink-400/10 text-pink-400'
                       : diasRestantesVal <= 7
                         ? 'bg-amber-500/10 text-amber-500'
                         : 'bg-green-500/10 text-green-500'
@@ -142,7 +142,7 @@ export default function AlumnoPerfil() {
         <div className="text-xs text-zinc-500 uppercase tracking-widest mb-4">Mi coach</div>
         {alumno.coach?.nombre ? (
           <div className="flex items-center gap-3 p-3 bg-hover border border-border rounded-xl">
-            <div className="w-8 h-8 rounded-full bg-red-900/30 flex items-center justify-center text-xs font-bold text-red-400 shrink-0">
+            <div className="w-8 h-8 rounded-full bg-pink-900/30 flex items-center justify-center text-xs font-bold text-pink-300 shrink-0">
               {alumno.coach.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
             </div>
             <div>

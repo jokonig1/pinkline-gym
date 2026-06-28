@@ -2,8 +2,9 @@ import './globals.css'
 import { ThemeProvider } from './providers'
 
 export const metadata = {
-  title: 'RedLine Gimnasio',
-  description: 'Plataforma de gestión integral',
+  title: 'Pinkline Gimnasio',
+  description: 'Entrenamiento personalizado exclusivo para mujeres.',
+  icons: { icon: '/imagenes pinkline/Pinkline-iso-rosado.svg' },
 }
 
 export default function RootLayout({ children }) {

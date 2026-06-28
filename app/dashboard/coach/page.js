@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ModalClase    from '@/app/dashboard/_components/ModalClase'
@@ -94,7 +94,7 @@ export default function CoachInicio() {
           {diaLabel}, {fechaLabel}
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-foreground">
-          Bienvenido, <span className="text-red-500">{nombre}</span>
+          Bienvenida, <span className="text-pink-400">{nombre}</span>
         </h1>
       </div>
 
@@ -135,7 +135,7 @@ export default function CoachInicio() {
                       onClick={() => setModalSlot(slot)}
                       className="flex items-center gap-3 bg-surface border border-border-md rounded-2xl px-4 py-3.5 hover:bg-hover hover:border-border-strong transition-all text-left w-full sm:w-auto sm:flex-1 sm:min-w-48 active:scale-[0.98]"
                     >
-                      <div className="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center text-sm font-black text-red-400 shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-pink-900/30 flex items-center justify-center text-sm font-black text-pink-300 shrink-0">
                         {iniciales}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -157,7 +157,7 @@ export default function CoachInicio() {
                             ✓ Asistió
                           </span>
                         ) : (
-                          <span className="text-[9px] text-red-400 font-bold px-2 py-1 rounded-full bg-red-900/20 border border-red-900/30">
+                          <span className="text-[9px] text-pink-300 font-bold px-2 py-1 rounded-full bg-pink-900/20 border border-pink-900/30">
                             ✕ Faltó
                           </span>
                         )}

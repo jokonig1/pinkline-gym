@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -50,7 +50,7 @@ export default function DashboardLayout({ children }) {
 
   if (loading) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-red-600 text-2xl font-black tracking-widest animate-pulse">REDLINE</div>
+      <div className="text-pink-500 text-2xl font-black tracking-widest animate-pulse">Pinkline</div>
     </div>
   )
 
@@ -106,14 +106,12 @@ export default function DashboardLayout({ children }) {
 
         {/* Logo + botón cerrar (solo móvil) */}
         <div className="p-5 border-b border-border flex items-center justify-between">
-          <div>
-            <div className="text-2xl font-black tracking-widest text-red-600">
-              RED<span className="text-foreground">LINE</span>
-            </div>
-            <div className="text-[9px] text-zinc-500 tracking-[3px] uppercase mt-0.5">
-              Gimnasio Integral
-            </div>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={theme === 'dark' ? '/imagenes pinkline/Pinkline-blanco-rosado.svg' : '/imagenes pinkline/Pinkline.svg'}
+            alt="Pinkline"
+            className="h-8 w-auto object-contain mx-auto scale-[2.8]"
+          />
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-zinc-500 hover:text-foreground w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover-md transition-colors"
@@ -133,13 +131,13 @@ export default function DashboardLayout({ children }) {
                 onClick={() => { setSidebarOpen(false); router.push(item.href) }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left
                   ${isActive
-                    ? 'bg-red-600/15 text-foreground'
+                    ? 'bg-pink-500/15 text-foreground'
                     : 'text-zinc-500 hover:text-foreground hover:bg-hover-md'
                   }`}
               >
                 <span className="text-base">{item.icon}</span>
                 <span>{item.label}</span>
-                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-red-600" />}
+                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-pink-500" />}
               </button>
             )
           })}
@@ -164,7 +162,7 @@ export default function DashboardLayout({ children }) {
           </div>
           <button
             onClick={handleLogout}
-            className="w-full mt-1 text-xs text-zinc-600 hover:text-red-500 transition-colors py-1.5 text-left px-2"
+            className="w-full mt-1 text-xs text-zinc-600 hover:text-pink-400 transition-colors py-1.5 text-left px-2"
           >
             Cerrar sesión →
           </button>
@@ -207,7 +205,7 @@ export default function DashboardLayout({ children }) {
               {theme === 'dark' ? '☀' : '◑'}
             </button>
 
-            <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap hidden xs:inline-block sm:inline-block">
+            <span className="bg-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap hidden xs:inline-block sm:inline-block">
               {new Date().toLocaleDateString('es-CL', { month: 'short', year: 'numeric' })}
             </span>
           </div>

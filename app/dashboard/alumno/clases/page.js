@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
@@ -125,7 +125,7 @@ export default function MisClases() {
           {[{ k:'semana', l:'Semana' }, { k:'lista', l:'Lista' }].map(({ k, l }) => (
             <button key={k} onClick={() => setVista(k)}
               className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
-                vista === k ? 'bg-red-600 text-white' : 'text-zinc-500 hover:text-foreground'
+                vista === k ? 'bg-pink-500 text-white' : 'text-zinc-500 hover:text-foreground'
               }`}>
               {l}
             </button>
@@ -144,19 +144,19 @@ export default function MisClases() {
             return (
               <div key={dia}
                 className={`bg-surface border rounded-xl overflow-hidden transition-colors ${
-                  esHoy ? 'border-red-600/50' : 'border-border'
+                  esHoy ? 'border-pink-500/50' : 'border-border'
                 }`}>
                 {/* Cabecera del día */}
-                <div className={`flex items-center gap-3 px-4 py-2.5 ${esHoy ? 'bg-red-600/5' : 'bg-raised'}`}>
+                <div className={`flex items-center gap-3 px-4 py-2.5 ${esHoy ? 'bg-pink-500/5' : 'bg-raised'}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${
-                    esHoy ? 'bg-red-600 text-white' : esPast ? 'bg-hover-md text-zinc-500' : 'bg-hover text-foreground'
+                    esHoy ? 'bg-pink-500 text-white' : esPast ? 'bg-hover-md text-zinc-500' : 'bg-hover text-foreground'
                   }`}>
                     {fecha.getDate()}
                   </div>
                   <div className="flex-1">
-                    <div className={`text-sm font-bold ${esHoy ? 'text-red-500' : esPast ? 'text-zinc-500' : 'text-foreground'}`}>
+                    <div className={`text-sm font-bold ${esHoy ? 'text-pink-400' : esPast ? 'text-zinc-500' : 'text-foreground'}`}>
                       {DIAS_LABEL[dia]}
-                      {esHoy && <span className="ml-2 text-[10px] font-normal text-red-400">Hoy</span>}
+                      {esHoy && <span className="ml-2 text-[10px] font-normal text-pink-300">Hoy</span>}
                     </div>
                     <div className="text-[10px] text-zinc-500">
                       {fecha.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
@@ -171,7 +171,7 @@ export default function MisClases() {
                 {slots.map((slot, i) => (
                   <div key={`${slot.id}-${i}`}
                     className="flex items-center gap-3 px-4 py-3 border-t border-border">
-                    <div className="text-sm font-bold text-red-500 w-12 shrink-0">
+                    <div className="text-sm font-bold text-pink-400 w-12 shrink-0">
                       {slot.hora?.slice(0,5)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -217,7 +217,7 @@ export default function MisClases() {
                 </div>
                 {slots.map(slot => (
                   <div key={slot.id} className="flex items-center gap-3 px-4 py-3 border-t border-border first:border-t-0">
-                    <div className="text-sm font-bold text-red-500 w-12 shrink-0">{slot.hora?.slice(0,5)}</div>
+                    <div className="text-sm font-bold text-pink-400 w-12 shrink-0">{slot.hora?.slice(0,5)}</div>
                     <div className="flex-1 text-sm text-foreground">
                       {slot.tipo === 'semipersonalizado' ? 'Semi Personalizado' : 'Personalizado'}
                     </div>

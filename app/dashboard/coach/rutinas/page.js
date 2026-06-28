@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
@@ -131,7 +131,7 @@ export default function CoachRutinas() {
         </div>
         <button
           onClick={abrirNueva}
-          className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2"
+          className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2"
         >
           + Nueva rutina
         </button>
@@ -146,7 +146,7 @@ export default function CoachRutinas() {
           </div>
           <button
             onClick={abrirNueva}
-            className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors"
+            className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors"
           >
             + Crear primera rutina
           </button>
@@ -178,7 +178,7 @@ export default function CoachRutinas() {
                   </button>
                   <button
                     onClick={() => setConfirmDel(r)}
-                    className="text-xs text-zinc-600 hover:text-red-400 px-3 py-1.5 rounded-lg border border-border hover:border-red-900/30 transition-all"
+                    className="text-xs text-zinc-600 hover:text-pink-300 px-3 py-1.5 rounded-lg border border-border hover:border-pink-900/30 transition-all"
                   >
                     ✕
                   </button>
@@ -214,7 +214,7 @@ export default function CoachRutinas() {
                   value={modal.nombre}
                   onChange={e => setNombreModal(e.target.value)}
                   placeholder="Ej: Espalda / Bícep"
-                  className="w-full bg-raised border border-border text-foreground rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-600 transition-colors placeholder:text-zinc-600"
+                  className="w-full bg-raised border border-border text-foreground rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors placeholder:text-zinc-600"
                 />
               </div>
 
@@ -223,7 +223,7 @@ export default function CoachRutinas() {
                   <label className="text-[10px] text-zinc-500 uppercase tracking-wider">Ejercicios</label>
                   <button
                     onClick={agregarEjercicio}
-                    className="text-xs text-red-500 hover:text-red-400 transition-colors font-medium"
+                    className="text-xs text-pink-400 hover:text-pink-300 transition-colors font-medium"
                   >
                     + Agregar
                   </button>
@@ -238,11 +238,11 @@ export default function CoachRutinas() {
                         value={ej.nombre}
                         onChange={e => setEjercicio(idx, e.target.value)}
                         placeholder="Nombre del ejercicio"
-                        className="flex-1 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-600 transition-colors placeholder:text-zinc-600"
+                        className="flex-1 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 transition-colors placeholder:text-zinc-600"
                       />
                       <button
                         onClick={() => quitarEjercicio(idx)}
-                        className="text-zinc-600 hover:text-red-400 transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-900/10 text-sm shrink-0"
+                        className="text-zinc-600 hover:text-pink-300 transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-pink-900/10 text-sm shrink-0"
                       >✕</button>
                     </div>
                   ))}
@@ -250,7 +250,7 @@ export default function CoachRutinas() {
               </div>
 
               {error && (
-                <p className="text-xs text-red-400 bg-red-900/20 border border-red-900/30 rounded-lg px-3 py-2">
+                <p className="text-xs text-pink-300 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">
                   {error}
                 </p>
               )}
@@ -266,7 +266,7 @@ export default function CoachRutinas() {
               <button
                 onClick={guardar}
                 disabled={saving}
-                className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
+                className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
               >
                 {saving ? 'Guardando…' : 'Guardar rutina'}
               </button>
@@ -280,8 +280,8 @@ export default function CoachRutinas() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-surface border border-border-strong rounded-2xl p-6 w-full max-w-sm shadow-2xl">
             <div className="text-center mb-5">
-              <div className="w-12 h-12 rounded-full bg-red-900/30 flex items-center justify-center mx-auto mb-3">
-                <span className="text-red-500 text-xl">✕</span>
+              <div className="w-12 h-12 rounded-full bg-pink-900/30 flex items-center justify-center mx-auto mb-3">
+                <span className="text-pink-400 text-xl">✕</span>
               </div>
               <p className="text-foreground font-bold">¿Eliminar rutina?</p>
               <p className="text-zinc-500 text-sm mt-1">«{confirmDel.nombre}»</p>
@@ -298,7 +298,7 @@ export default function CoachRutinas() {
               </button>
               <button
                 onClick={() => eliminar(confirmDel.id)}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
+                className="flex-1 bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
               >
                 Eliminar
               </button>

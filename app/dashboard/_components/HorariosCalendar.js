@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, Fragment, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -245,7 +245,7 @@ export default function HorariosCalendar({
             ].map(({ key, label, short }) => (
               <button key={key} onClick={() => setVista(key)}
                 className={`px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
-                  vista === key ? 'bg-red-600 text-white' : 'text-zinc-500 hover:text-foreground'
+                  vista === key ? 'bg-pink-500 text-white' : 'text-zinc-500 hover:text-foreground'
                 }`}>
                 <span className="sm:hidden">{short}</span>
                 <span className="hidden sm:inline">{label}</span>
@@ -281,7 +281,7 @@ export default function HorariosCalendar({
             <select
               value={coachFiltro || ''}
               onChange={e => setCoachFiltro(e.target.value || null)}
-              className="bg-surface border border-border text-foreground rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-red-600 transition-colors"
+              className="bg-surface border border-border text-foreground rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-pink-500 transition-colors"
             >
               <option value="">Todos los coaches</option>
               {coaches.map((c, i) => (
@@ -306,13 +306,13 @@ export default function HorariosCalendar({
             {semana.map(({ dia, fecha }) => {
               const esHoy = fecha.toDateString() === hoy.toDateString()
               return (
-                <div key={dia} className={`bg-surface py-1 text-center ${esHoy ? 'bg-red-600/5' : ''}`}>
+                <div key={dia} className={`bg-surface py-1 text-center ${esHoy ? 'bg-pink-500/5' : ''}`}>
                   {/* Abreviación de 2 letras en móvil, 3 letras en sm+ */}
                   <div className="text-[8px] font-bold text-zinc-500 uppercase tracking-wide">
                     <span className="sm:hidden">{DIAS_2[dia]}</span>
                     <span className="hidden sm:inline">{DIAS_LABEL[dia]}</span>
                   </div>
-                  <div className={`text-[10px] sm:text-xs font-black ${esHoy ? 'text-red-500' : 'text-foreground'}`}>
+                  <div className={`text-[10px] sm:text-xs font-black ${esHoy ? 'text-pink-400' : 'text-foreground'}`}>
                     {fecha.getDate()}
                   </div>
                 </div>
@@ -364,11 +364,11 @@ export default function HorariosCalendar({
                 <button key={dia} onClick={() => setDiaSeleccionado(i)}
                   className={`shrink-0 flex flex-col items-center px-2.5 sm:px-3 py-1.5 rounded-xl transition-all ${
                     diaSeleccionado === i
-                      ? 'bg-red-600 text-white'
+                      ? 'bg-pink-500 text-white'
                       : 'bg-surface border border-border text-zinc-500 hover:text-foreground'
                   }`}>
                   <span className="text-[9px] uppercase tracking-widest">{DIAS_2[dia]}</span>
-                  <span className={`text-sm sm:text-base font-black ${esHoy && diaSeleccionado !== i ? 'text-red-500' : ''}`}>
+                  <span className={`text-sm sm:text-base font-black ${esHoy && diaSeleccionado !== i ? 'text-pink-400' : ''}`}>
                     {fecha.getDate()}
                   </span>
                 </button>
@@ -475,10 +475,10 @@ export default function HorariosCalendar({
                     onClick={() => !esDomingo && handleMesDiaClick(fecha)}
                     className={`bg-surface p-0.5 overflow-hidden transition-colors flex flex-col
                       ${!esDomingo ? 'cursor-pointer hover:bg-hover active:bg-hover-md' : ''}
-                      ${esHoy ? 'ring-1 ring-inset ring-red-600/40' : ''}`}
+                      ${esHoy ? 'ring-1 ring-inset ring-pink-500/40' : ''}`}
                   >
                     <div className={`text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full mx-auto mb-px shrink-0 ${
-                      esHoy ? 'bg-red-600 text-white' : esDomingo ? 'text-zinc-600' : 'text-zinc-500'
+                      esHoy ? 'bg-pink-500 text-white' : esDomingo ? 'text-zinc-600' : 'text-zinc-500'
                     }`}>{d}</div>
                     <div className="space-y-px flex-1 min-h-0 overflow-hidden">
                       {slots.slice(0, 2).map(slot => {
@@ -511,7 +511,7 @@ export default function HorariosCalendar({
 
       {/* ── Botón + agregar clase extra ── */}
       <button onClick={abrirModalAgregar} title="Agregar clase extra / sobrecupo"
-        className="fixed bottom-6 right-6 z-20 w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl font-light active:scale-95">
+        className="fixed bottom-6 right-6 z-20 w-12 h-12 rounded-full bg-pink-500 hover:bg-pink-600 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl font-light active:scale-95">
         +
       </button>
 
@@ -528,7 +528,7 @@ export default function HorariosCalendar({
             {/* Info del slot */}
             <div className="px-5 pt-5 pb-4 border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center text-sm font-black text-red-400 shrink-0">
+                <div className="w-10 h-10 rounded-full bg-pink-900/30 flex items-center justify-center text-sm font-black text-pink-300 shrink-0">
                   {slotAccion.alumno?.nombre?.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </div>
                 <div>
@@ -628,7 +628,7 @@ export default function HorariosCalendar({
                     {tipoAlumno === 'nuevo' ? 'El alumno fue creado y su horario quedó registrado.' : 'El horario extra quedó registrado.'}
                   </p>
                   <button onClick={cerrarModalAgregar}
-                    className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors">
+                    className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors">
                     Cerrar y actualizar
                   </button>
                 </div>
@@ -640,8 +640,8 @@ export default function HorariosCalendar({
                     { tipo:'nuevo',     icon:'+',  titulo:'Alumno nuevo',     sub:'Registrar a alguien nuevo con datos básicos' },
                   ].map(({ tipo, icon, titulo, sub }) => (
                     <button key={tipo} onClick={() => elegirTipo(tipo)}
-                      className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-red-600/50 hover:bg-red-600/5 transition-all text-left">
-                      <div className="w-10 h-10 rounded-full bg-raised flex items-center justify-center shrink-0 text-lg font-bold text-red-500">{icon}</div>
+                      className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-pink-500/50 hover:bg-pink-500/5 transition-all text-left">
+                      <div className="w-10 h-10 rounded-full bg-raised flex items-center justify-center shrink-0 text-lg font-bold text-pink-400">{icon}</div>
                       <div>
                         <div className="text-sm font-bold text-foreground">{titulo}</div>
                         <div className="text-xs text-zinc-500 mt-0.5">{sub}</div>
@@ -657,7 +657,7 @@ export default function HorariosCalendar({
                     <input type="text" placeholder="Buscar por nombre..."
                       value={formExtra.busqueda}
                       onChange={e => setFormExtra(f => ({ ...f, busqueda: e.target.value, alumno_id:'' }))}
-                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-red-600 transition-colors placeholder:text-zinc-600"
+                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors placeholder:text-zinc-600"
                     />
                     {loadingAlumnos ? (
                       <div className="text-xs text-zinc-500 text-center py-4">Cargando alumnos…</div>
@@ -669,16 +669,16 @@ export default function HorariosCalendar({
                           <button key={a.id}
                             onClick={() => setFormExtra(f => ({ ...f, alumno_id: a.id, busqueda: a.nombre }))}
                             className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors ${
-                              formExtra.alumno_id === a.id ? 'bg-red-600/10 text-foreground' : 'hover:bg-hover text-foreground'
+                              formExtra.alumno_id === a.id ? 'bg-pink-500/10 text-foreground' : 'hover:bg-hover text-foreground'
                             }`}>
-                            <div className="w-7 h-7 rounded-full bg-red-900/20 flex items-center justify-center text-[10px] font-bold text-red-400 shrink-0">
+                            <div className="w-7 h-7 rounded-full bg-pink-900/20 flex items-center justify-center text-[10px] font-bold text-pink-300 shrink-0">
                               {a.nombre.split(' ').map(n => n[0]).join('').slice(0,2)}
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="truncate font-medium">{a.nombre}</div>
                               <div className="text-[10px] text-zinc-500">{a.plan}</div>
                             </div>
-                            {formExtra.alumno_id === a.id && <span className="text-red-500 text-sm shrink-0">✓</span>}
+                            {formExtra.alumno_id === a.id && <span className="text-pink-400 text-sm shrink-0">✓</span>}
                           </button>
                         ))}
                       </div>
@@ -689,11 +689,11 @@ export default function HorariosCalendar({
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Nombre completo <span className="text-red-500">*</span></label>
+                    <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Nombre completo <span className="text-pink-400">*</span></label>
                     <input type="text" value={formExtra.nombre}
                       onChange={e => setFormExtra(f => ({ ...f, nombre: e.target.value }))}
                       placeholder="Ej: Juan Pérez"
-                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-red-600 transition-colors"
+                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
                     />
                   </div>
                   <div>
@@ -701,14 +701,14 @@ export default function HorariosCalendar({
                     <input type="tel" value={formExtra.telefono}
                       onChange={e => setFormExtra(f => ({ ...f, telefono: e.target.value }))}
                       placeholder="+56 9 xxxx xxxx"
-                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-red-600 transition-colors"
+                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Plan</label>
                       <select value={formExtra.plan} onChange={e => setFormExtra(f => ({ ...f, plan: e.target.value }))}
-                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-red-600">
+                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500">
                         <option value="1x/sem">1x/sem</option>
                         <option value="2x/sem">2x/sem</option>
                         <option value="3x/sem">3x/sem</option>
@@ -723,7 +723,7 @@ export default function HorariosCalendar({
                       <div>
                         <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Coach</label>
                         <select value={formExtra.coach_id} onChange={e => setFormExtra(f => ({ ...f, coach_id: e.target.value }))}
-                          className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-red-600">
+                          className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500">
                           <option value="">Sin asignar</option>
                           {coaches.map(c => <option key={c.id} value={c.id}>{c.nombre.split(' ')[0]}</option>)}
                         </select>
@@ -755,7 +755,7 @@ export default function HorariosCalendar({
               )}
 
               {errorExtra && (
-                <p className="mt-3 text-xs text-red-400 bg-red-900/20 border border-red-900/30 rounded-lg px-3 py-2">{errorExtra}</p>
+                <p className="mt-3 text-xs text-pink-300 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">{errorExtra}</p>
               )}
             </div>
 
@@ -764,7 +764,7 @@ export default function HorariosCalendar({
                 <button onClick={cerrarModalAgregar}
                   className="flex-1 border border-border-strong text-zinc-500 hover:text-foreground text-sm py-2.5 rounded-xl transition-all">Cancelar</button>
                 <button onClick={() => guardarExtra(false)} disabled={guardandoExtra}
-                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
+                  className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
                   {guardandoExtra ? 'Guardando…' : tipoAlumno === 'nuevo' ? 'Crear y agregar' : 'Agregar clase'}
                 </button>
               </div>
@@ -786,7 +786,7 @@ function HorarioForm({ formExtra, setFormExtra }) {
         <div>
           <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Día</label>
           <select value={formExtra.dia} onChange={e => setFormExtra(f => ({ ...f, dia: e.target.value }))}
-            className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-red-600">
+            className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500">
             {['lunes','martes','miercoles','jueves','viernes','sabado'].map(d => (
               <option key={d} value={d}>{DIAS_LABEL_LARGO[d]}</option>
             ))}
@@ -795,7 +795,7 @@ function HorarioForm({ formExtra, setFormExtra }) {
         <div>
           <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Hora</label>
           <select value={formExtra.hora} onChange={e => setFormExtra(f => ({ ...f, hora: e.target.value }))}
-            className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-red-600">
+            className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500">
             {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
           </select>
         </div>
@@ -806,7 +806,7 @@ function HorarioForm({ formExtra, setFormExtra }) {
           {[{val:'personalizado',label:'Personalizado'},{val:'semipersonalizado',label:'Semi Personalizado'}].map(({val,label}) => (
             <button key={val} type="button" onClick={() => setFormExtra(f => ({ ...f, tipo: val }))}
               className={`flex-1 py-2.5 rounded-xl border text-xs font-bold transition-all ${
-                formExtra.tipo === val ? 'bg-red-600/15 border-red-600/40 text-red-500' : 'border-border-strong text-zinc-500 hover:text-foreground'
+                formExtra.tipo === val ? 'bg-pink-500/15 border-pink-500/40 text-pink-400' : 'border-border-strong text-zinc-500 hover:text-foreground'
               }`}>
               {label}
             </button>

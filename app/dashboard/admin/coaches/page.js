@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -117,7 +117,7 @@ export default function CoachesPage() {
         </div>
         <button
           onClick={() => router.push('/dashboard/admin/coaches/nuevo')}
-          className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-colors"
+          className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-colors"
         >
           + Nuevo coach
         </button>
@@ -231,7 +231,7 @@ export default function CoachesPage() {
                 <div className="h-1.5 bg-raised rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      capacidad >= 90 ? 'bg-red-500' :
+                      capacidad >= 90 ? 'bg-pink-400' :
                       capacidad >= 70 ? 'bg-yellow-500' : 'bg-green-500'
                     }`}
                     style={{ width: `${capacidad}%` }}
@@ -263,7 +263,7 @@ export default function CoachesPage() {
                 <input
                   value={formEditar.nombre}
                   onChange={e => setFormEditar(f => ({ ...f, nombre: e.target.value }))}
-                  className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-red-600 transition-colors"
+                  className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
                 />
               </div>
 
@@ -273,7 +273,7 @@ export default function CoachesPage() {
                   value={formEditar.telefono}
                   onChange={e => setFormEditar(f => ({ ...f, telefono: e.target.value }))}
                   placeholder="+56 9 xxxx xxxx"
-                  className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-red-600 transition-colors placeholder-zinc-600"
+                  className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors placeholder-zinc-600"
                 />
               </div>
 
@@ -310,7 +310,7 @@ export default function CoachesPage() {
               </div>
 
               {errorEditar && (
-                <p className="text-xs text-red-400 bg-red-900/20 border border-red-900/30 rounded-lg px-3 py-2">
+                <p className="text-xs text-pink-300 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">
                   {errorEditar}
                 </p>
               )}
@@ -322,7 +322,7 @@ export default function CoachesPage() {
                 Cancelar
               </button>
               <button onClick={guardarEditar} disabled={guardando}
-                className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
+                className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
                 {guardando ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </div>

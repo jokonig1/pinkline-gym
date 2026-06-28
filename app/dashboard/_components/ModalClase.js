@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 
 export default function ModalClase({ slot, coachId, fecha, onClose }) {
@@ -177,7 +177,7 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
             <div className="flex gap-2">
               {[
                 { label: '✓  Asistió',     value: true,  cls: 'bg-green-600/20 border-green-600/40 text-green-400' },
-                { label: '✕  No asistió', value: false, cls: 'bg-red-600/20 border-red-600/40 text-red-400' },
+                { label: '✕  No asistió', value: false, cls: 'bg-pink-500/20 border-pink-500/40 text-pink-300' },
               ].map(({ label, value, cls }) => (
                 <button
                   key={String(value)}
@@ -194,7 +194,7 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
               ))}
             </div>
             {asistio !== null && (
-              <div className={`mt-2 text-xs text-center font-medium ${asistio ? 'text-green-500' : 'text-red-400'}`}>
+              <div className={`mt-2 text-xs text-center font-medium ${asistio ? 'text-green-500' : 'text-pink-300'}`}>
                 {asistio ? 'Asistencia registrada' : 'Inasistencia registrada'}
               </div>
             )}
@@ -217,7 +217,7 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
                       onClick={() => seleccionarRutina(r)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
                         rutinaActiva?.id === r.id
-                          ? 'bg-red-600/20 border-red-600/50 text-red-400'
+                          ? 'bg-pink-500/20 border-pink-500/50 text-pink-300'
                           : 'border-border-strong text-zinc-500 hover:text-foreground hover:border-border-strong'
                       }`}
                     >
@@ -258,7 +258,7 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
                             />
                             <button
                               onClick={() => eliminarEjercicio(ejIdx)}
-                              className="text-zinc-600 hover:text-red-400 transition-colors w-6 h-6 flex items-center justify-center rounded shrink-0 hover:bg-red-900/20 text-xs"
+                              className="text-zinc-600 hover:text-pink-300 transition-colors w-6 h-6 flex items-center justify-center rounded shrink-0 hover:bg-pink-900/20 text-xs"
                               title="Eliminar ejercicio"
                             >✕</button>
                           </div>
@@ -289,7 +289,7 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
                                       placeholder="kg"
                                       value={serie.peso}
                                       onChange={e => setSerie(ejIdx, serieIdx, 'peso', e.target.value)}
-                                      className="w-full bg-input-bg border border-border text-foreground rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-red-600 transition-colors text-center"
+                                      className="w-full bg-input-bg border border-border text-foreground rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-pink-500 transition-colors text-center"
                                     />
                                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-zinc-600">kg</span>
                                   </div>
@@ -300,14 +300,14 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
                                       placeholder="reps"
                                       value={serie.reps}
                                       onChange={e => setSerie(ejIdx, serieIdx, 'reps', e.target.value)}
-                                      className="w-full bg-input-bg border border-border text-foreground rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-red-600 transition-colors text-center"
+                                      className="w-full bg-input-bg border border-border text-foreground rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-pink-500 transition-colors text-center"
                                     />
                                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-zinc-600">reps</span>
                                   </div>
                                 </div>
                                 <button
                                   onClick={() => quitarSerie(ejIdx, serieIdx)}
-                                  className="text-zinc-600 hover:text-red-400 transition-colors w-5 h-5 flex items-center justify-center text-xs shrink-0"
+                                  className="text-zinc-600 hover:text-pink-300 transition-colors w-5 h-5 flex items-center justify-center text-xs shrink-0"
                                 >✕</button>
                               </div>
                             ))}
@@ -315,7 +315,7 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
 
                           <button
                             onClick={() => agregarSerie(ejIdx)}
-                            className="mt-2 text-[10px] text-zinc-600 hover:text-red-400 transition-colors"
+                            className="mt-2 text-[10px] text-zinc-600 hover:text-pink-300 transition-colors"
                           >
                             + Agregar serie
                           </button>
@@ -325,7 +325,7 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
 
                     <button
                       onClick={agregarEjercicio}
-                      className="w-full border border-dashed border-border-strong text-zinc-600 hover:text-red-400 hover:border-red-900/40 text-xs py-2.5 rounded-xl transition-colors"
+                      className="w-full border border-dashed border-border-strong text-zinc-600 hover:text-pink-300 hover:border-pink-900/40 text-xs py-2.5 rounded-xl transition-colors"
                     >
                       + Agregar ejercicio
                     </button>
@@ -339,12 +339,12 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
                         onChange={e => setNotas(e.target.value)}
                         rows={2}
                         placeholder="Observaciones de la sesión..."
-                        className="w-full bg-raised border border-border text-foreground rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-red-600 resize-none transition-colors placeholder:text-zinc-600"
+                        className="w-full bg-raised border border-border text-foreground rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-500 resize-none transition-colors placeholder:text-zinc-600"
                       />
                     </div>
 
                     {errorRutina && (
-                      <p className="text-xs text-red-400 bg-red-900/20 border border-red-900/30 rounded-lg px-3 py-2">
+                      <p className="text-xs text-pink-300 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">
                         {errorRutina}
                       </p>
                     )}
@@ -373,7 +373,7 @@ export default function ModalClase({ slot, coachId, fecha, onClose }) {
             <button
               onClick={guardarSesion}
               disabled={guardandoRutina}
-              className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
+              className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
             >
               {guardandoRutina ? 'Guardando…' : 'Guardar sesión'}
             </button>

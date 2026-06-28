@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
@@ -81,7 +81,7 @@ export default function MiRutina() {
               onClick={() => setSelIdx(i)}
               className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                 selIdx === i
-                  ? 'bg-red-600/15 border-red-600/40 text-red-500'
+                  ? 'bg-pink-500/15 border-pink-500/40 text-pink-400'
                   : 'border-border text-zinc-500 hover:text-foreground'
               }`}
             >
@@ -121,12 +121,12 @@ export default function MiRutina() {
                     <div className="flex flex-wrap gap-1.5">
                       {(ej.series || []).map((s, j) => (
                         <div key={j}
-                          className="bg-red-600/10 border border-red-600/20 rounded-lg px-2.5 py-1.5 text-center">
-                          <div className="text-[9px] text-red-400/70 mb-0.5">S{j+1}</div>
-                          <div className="text-xs font-bold text-red-500">
+                          className="bg-pink-500/10 border border-pink-500/20 rounded-lg px-2.5 py-1.5 text-center">
+                          <div className="text-[9px] text-pink-300/70 mb-0.5">S{j+1}</div>
+                          <div className="text-xs font-bold text-pink-400">
                             {s.peso ? `${s.peso}kg` : '—'}
                           </div>
-                          <div className="text-[9px] text-red-400/70">×{s.reps || '—'}</div>
+                          <div className="text-[9px] text-pink-300/70">×{s.reps || '—'}</div>
                         </div>
                       ))}
                     </div>

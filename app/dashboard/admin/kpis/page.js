@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState, useCallback } from 'react'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
 import { COLORES_COACH } from '@/lib/constants'
@@ -71,7 +71,7 @@ const DIAS_SHORT  = { lunes:'Lu', martes:'Ma', miercoles:'Mi', jueves:'Ju', vier
 function nivelOcupacion(count, cap) {
   const pct = count / cap
   if (count === 0)   return { color: '#d1d5db', label: 'Sin alumnos',    bg: 'bg-zinc-200' }
-  if (pct >= 0.875)  return { color: '#ef4444', label: 'Muy concurrido', bg: 'bg-red-500'    }
+  if (pct >= 0.875)  return { color: '#ef4444', label: 'Muy concurrido', bg: 'bg-pink-400'    }
   if (pct >= 0.625)  return { color: '#f59e0b', label: 'Concurrido',     bg: 'bg-amber-400'  }
   if (pct >= 0.375)  return { color: '#22c55e', label: 'Moderado',       bg: 'bg-green-500'  }
   return                    { color: '#86efac', label: 'Libre',           bg: 'bg-green-300'  }
@@ -112,7 +112,7 @@ function GraficoOcupacion({ porHora, porDiaHora, capacidad }) {
       <div className="flex gap-1 flex-wrap">
         <button onClick={() => setFiltroDia(null)}
           className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-            filtroDia === null ? 'bg-red-600 text-white' : 'text-zinc-500 hover:text-foreground hover:bg-hover-md'
+            filtroDia === null ? 'bg-pink-500 text-white' : 'text-zinc-500 hover:text-foreground hover:bg-hover-md'
           }`}>
           Promedio
         </button>
@@ -121,7 +121,7 @@ function GraficoOcupacion({ porHora, porDiaHora, capacidad }) {
           return (
             <button key={dia} onClick={() => setFiltroDia(dia === filtroDia ? null : dia)}
               className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                filtroDia === dia ? 'bg-red-600 text-white' : 'text-zinc-500 hover:text-foreground hover:bg-hover-md'
+                filtroDia === dia ? 'bg-pink-500 text-white' : 'text-zinc-500 hover:text-foreground hover:bg-hover-md'
               }`}>
               {DIAS_SHORT[dia]}
             </button>
@@ -261,7 +261,7 @@ export default function AdminMetricas() {
   }, [])
 
   if (loading) return <LoadingSpinner />
-  if (error)   return <div className="text-red-400 text-sm">{error}</div>
+  if (error)   return <div className="text-pink-300 text-sm">{error}</div>
 
   const { alumnos, asistencia, excepciones, porPlan, porCoach, sesionesRutina, coaches, semana,
           clasesEstaSemana, ingresosMes, ingresosMesAnterior, historico = [] } = data
@@ -334,7 +334,7 @@ export default function AdminMetricas() {
                 {igual ? (
                   <span className="text-[11px] text-zinc-500">Sin cambios vs mes anterior</span>
                 ) : (
-                  <span className={`text-[11px] font-bold flex items-center gap-1 ${subido ? 'text-green-400' : 'text-red-400'}`}>
+                  <span className={`text-[11px] font-bold flex items-center gap-1 ${subido ? 'text-green-400' : 'text-pink-300'}`}>
                     <span className="text-sm">{subido ? '↑' : '↓'}</span>
                     {pct}% vs mes anterior
                   </span>
@@ -365,7 +365,7 @@ export default function AdminMetricas() {
                 <div className="text-xs text-zinc-500">asistencias</div>
               </div>
               <div>
-                <div className="text-2xl font-black text-red-400">{asistencia.total - asistencia.asistieron}</div>
+                <div className="text-2xl font-black text-pink-300">{asistencia.total - asistencia.asistieron}</div>
                 <div className="text-xs text-zinc-500">inasistencias</div>
               </div>
               {asistencia.total === 0 && (
@@ -470,13 +470,13 @@ export default function AdminMetricas() {
         {excepciones.total > 0 && (
           <div className="mt-4">
             <div className="h-3 bg-hover-md rounded-full overflow-hidden flex">
-              <div className="h-full bg-red-500/70 rounded-l-full transition-all duration-700"
+              <div className="h-full bg-pink-400/70 rounded-l-full transition-all duration-700"
                 style={{ width: `${Math.round(excepciones.cancelaciones / excepciones.total * 100)}%` }} />
               <div className="h-full bg-amber-400/70 rounded-r-full transition-all duration-700"
                 style={{ width: `${Math.round(excepciones.reagendamientos / excepciones.total * 100)}%` }} />
             </div>
             <div className="flex justify-between mt-1.5">
-              <span className="text-[10px] text-red-400">Cancelaciones</span>
+              <span className="text-[10px] text-pink-300">Cancelaciones</span>
               <span className="text-[10px] text-amber-400">Reagendamientos</span>
             </div>
           </div>
@@ -523,7 +523,7 @@ export default function AdminMetricas() {
                       <td key={m.key} className="text-center py-3 px-2">
                         <div className="text-base font-black text-foreground">{m.acumulados}</div>
                         {diff !== null && diff !== 0 && (
-                          <div className={`text-[10px] font-bold ${diff > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          <div className={`text-[10px] font-bold ${diff > 0 ? 'text-green-400' : 'text-pink-300'}`}>
                             {diff > 0 ? '+' : ''}{diff}
                           </div>
                         )}
@@ -554,7 +554,7 @@ export default function AdminMetricas() {
                       <td key={m.key} className="text-center py-3 px-2">
                         <div className="text-base font-black text-foreground">{m.clasesRealizadas}</div>
                         {diff !== null && diff !== 0 && (
-                          <div className={`text-[10px] font-bold ${diff > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          <div className={`text-[10px] font-bold ${diff > 0 ? 'text-green-400' : 'text-pink-300'}`}>
                             {diff > 0 ? '+' : ''}{diff}
                           </div>
                         )}
@@ -573,7 +573,7 @@ export default function AdminMetricas() {
                       <td key={m.key} className="text-center py-3 px-2">
                         <div className="text-base font-black text-foreground">{m.inasistencias}</div>
                         {diff !== null && diff !== 0 && (
-                          <div className={`text-[10px] font-bold ${diff > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                          <div className={`text-[10px] font-bold ${diff > 0 ? 'text-pink-300' : 'text-green-400'}`}>
                             {diff > 0 ? '+' : ''}{diff}
                           </div>
                         )}
@@ -593,7 +593,7 @@ export default function AdminMetricas() {
                       <td key={m.key} className="text-center py-3 px-2">
                         <div className="text-xs font-black text-green-400">{fmtPesos(m.ingresos)}</div>
                         {diff !== null && diff !== 0 && pct !== null && (
-                          <div className={`text-[10px] font-bold ${diff > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          <div className={`text-[10px] font-bold ${diff > 0 ? 'text-green-400' : 'text-pink-300'}`}>
                             {diff > 0 ? '↑' : '↓'}{pct}%
                           </div>
                         )}
@@ -626,7 +626,7 @@ export default function AdminMetricas() {
                           minHeight: 4,
                         }}
                       />
-                      <div className={`text-[9px] uppercase font-bold ${esActual ? 'text-red-500' : 'text-zinc-500'}`}>
+                      <div className={`text-[9px] uppercase font-bold ${esActual ? 'text-pink-400' : 'text-zinc-500'}`}>
                         {m.mes}
                       </div>
                     </div>
