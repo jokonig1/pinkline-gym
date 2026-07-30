@@ -1,8 +1,10 @@
-﻿'use client'
+'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ModalClase    from '@/app/dashboard/_components/ModalClase'
+import { nombreSlot } from '@/app/dashboard/_components/calendar/utils'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
+import EmptyIcon from '@/app/dashboard/_components/EmptyIcon'
 
 const HORAS_LABEL = {
   '06:00': '6 AM', '07:00': '7 AM', '08:00': '8 AM', '09:00': '9 AM',
@@ -86,7 +88,7 @@ export default function CoachInicio() {
   const horasOrdenadas = Object.keys(porHora).sort()
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-5xl">
 
       {/* Bienvenida */}
       <div className="mb-6">
@@ -94,7 +96,7 @@ export default function CoachInicio() {
           {diaLabel}, {fechaLabel}
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-foreground">
-          Bienvenida, <span className="text-pink-400">{nombre}</span>
+          Bienvenido, <span className="text-pink-500">{nombre}</span>
         </h1>
       </div>
 
@@ -108,7 +110,7 @@ export default function CoachInicio() {
 
       {clases.length === 0 ? (
         <div className="bg-surface border border-border rounded-2xl p-10 text-center">
-          <div className="text-4xl mb-3">🏋️</div>
+          <EmptyIcon tipo="pesas" className="w-10 h-10 mb-3 text-zinc-500" />
           <div className="text-foreground font-bold mb-1">Sin clases hoy</div>
           <div className="text-zinc-600 text-sm">Disfruta tu día libre</div>
         </div>
@@ -126,8 +128,8 @@ export default function CoachInicio() {
               <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
                 {porHora[hora].map((slot, i) => {
                   const asist = asistencias.find(a => a.alumno_horario_id === slot.id)
-                  const iniciales = slot.alumno?.nombre
-                    ?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                  const nombre = nombreSlot(slot)
+                  const iniciales = nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
                   return (
                     <button
@@ -135,15 +137,23 @@ export default function CoachInicio() {
                       onClick={() => setModalSlot(slot)}
                       className="flex items-center gap-3 bg-surface border border-border-md rounded-2xl px-4 py-3.5 hover:bg-hover hover:border-border-strong transition-all text-left w-full sm:w-auto sm:flex-1 sm:min-w-48 active:scale-[0.98]"
                     >
-                      <div className="w-10 h-10 rounded-full bg-pink-900/30 flex items-center justify-center text-sm font-black text-pink-300 shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-pink-900/30 flex items-center justify-center text-sm font-black text-pink-400 shrink-0">
                         {iniciales}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold text-foreground truncate">{slot.alumno?.nombre}</div>
+                        <div className="text-sm font-bold text-foreground truncate">{nombre}</div>
                         <div className="text-xs text-zinc-500 mt-0.5">
                           {slot.tipo === 'semipersonalizado' ? 'Semi Personalizado' : 'Personalizado'}
                           {slot.tipo_slot === 'movida' && (
-                            <span className="ml-1.5 text-amber-500">↗ movida</span>
+                            <span className="ml-1.5 text-amber-500">→ movida</span>
+                          )}
+                          {slot.fecha && (
+                            <span className="ml-1.5 text-pink-400">· Extra</span>
+                          )}
+                          {slot.coach_id !== profile.id && slot.coach?.nombre && (
+                            <span className="ml-1.5 text-amber-500">
+                              · Cubriendo a {slot.coach.nombre.split(' ')[0]}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -157,7 +167,7 @@ export default function CoachInicio() {
                             ✓ Asistió
                           </span>
                         ) : (
-                          <span className="text-[9px] text-pink-300 font-bold px-2 py-1 rounded-full bg-pink-900/20 border border-pink-900/30">
+                          <span className="text-[9px] text-pink-400 font-bold px-2 py-1 rounded-full bg-pink-900/20 border border-pink-900/30">
                             ✕ Faltó
                           </span>
                         )}
@@ -177,6 +187,7 @@ export default function CoachInicio() {
           slot={modalSlot}
           coachId={profile.id}
           fecha={fechaHoy}
+          rutasAdmin={profile.rol === 'admin'}
           onClose={() => {
             setModalSlot(null)
             fetch(`/api/asistencias?coach_id=${profile.id}&fecha=${fechaHoy}`)

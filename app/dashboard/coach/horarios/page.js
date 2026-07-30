@@ -9,6 +9,7 @@ import { guardarExcepcion, deshacerExcepcion } from '@/lib/excepciones'
 export default function CoachHorariosPage() {
   const [horarios,     setHorarios]     = useState([])
   const [excepciones,  setExcepciones]  = useState([])
+  const [traspasos,    setTraspasos]    = useState([])
   const [coaches,      setCoaches]      = useState([])
   const [coachSelf,    setCoachSelf]    = useState(null)
   const [semanaOffset, setSemanaOffset] = useState(0)
@@ -51,12 +52,13 @@ export default function CoachHorariosPage() {
         fetch('/api/coaches'),
       ])
 
-      const { horarios: h, excepciones: exc } = horariosRes.ok
+      const { horarios: h, excepciones: exc, traspasos: tr } = horariosRes.ok
         ? await horariosRes.json()
-        : { horarios: [], excepciones: [] }
+        : { horarios: [], excepciones: [], traspasos: [] }
 
       setHorarios(h)
       setExcepciones(exc)
+      setTraspasos(tr || [])
       setCoaches(coachesRes.ok ? await coachesRes.json() : [])
       setLoading(false)
     }
@@ -81,6 +83,7 @@ export default function CoachHorariosPage() {
     <HorariosCalendar
       horarios={horarios}
       excepciones={excepciones}
+      traspasos={traspasos}
       coaches={coaches}
       semana={getSemana(semanaOffset)}
       semanaOffset={semanaOffset}

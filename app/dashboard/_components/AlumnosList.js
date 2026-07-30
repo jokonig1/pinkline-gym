@@ -1,10 +1,11 @@
-﻿'use client'
+'use client'
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { DIAS_POR_PLAN } from '@/lib/constants'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
 import StatusBadge from '@/app/dashboard/_components/StatusBadge'
+import DateInput from '@/app/dashboard/_components/DateInput'
 
 export default function AlumnosList({
   coachIdFiltro = null,
@@ -286,7 +287,7 @@ export default function AlumnosList({
         {mostrarAgregar && (
           <button
             onClick={() => router.push(rutaNuevo)}
-            className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-colors flex items-center gap-2"
+            className="bg-pink-600 hover:bg-pink-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-colors flex items-center gap-2"
           >
             + Nuevo alumno
           </button>
@@ -301,7 +302,7 @@ export default function AlumnosList({
           placeholder="Buscar por nombre, RUT o correo..."
           value={busqueda}
           onChange={e => setBusqueda(e.target.value)}
-          className="w-full bg-surface border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors placeholder:text-zinc-600"
+          className="w-full bg-surface border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors placeholder:text-zinc-600"
         />
 
         {/* Selects en grilla — 2 cols en móvil */}
@@ -309,7 +310,7 @@ export default function AlumnosList({
           <select
             value={filtroEstado}
             onChange={e => setFiltroEstado(e.target.value)}
-            className="bg-surface border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+            className="bg-surface border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
           >
             <option value="todos">Todos los estados</option>
             <option value="activos">Activos</option>
@@ -319,7 +320,7 @@ export default function AlumnosList({
           <select
             value={filtroTipo}
             onChange={e => setFiltroTipo(e.target.value)}
-            className="bg-surface border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+            className="bg-surface border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
           >
             <option value="todos">Todos los tipos</option>
             <option value="Semi Personalizado">Semi Personalizado</option>
@@ -329,7 +330,7 @@ export default function AlumnosList({
           <select
             value={filtroPlan}
             onChange={e => setFiltroPlan(e.target.value)}
-            className="bg-surface border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+            className="bg-surface border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
           >
             <option value="todos">Todos los planes</option>
             <option value="1x/sem">1x por semana</option>
@@ -346,7 +347,7 @@ export default function AlumnosList({
             <select
               value={filtroCoach}
               onChange={e => setFiltroCoach(e.target.value)}
-              className="col-span-2 sm:col-span-1 bg-surface border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+              className="col-span-2 sm:col-span-1 bg-surface border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
             >
               <option value="todos">Todos los coaches</option>
               <option value="">Sin coach</option>
@@ -365,7 +366,7 @@ export default function AlumnosList({
             </span>
             <button
               onClick={() => { setBusqueda(''); setFiltroEstado('todos'); setFiltroPlan('todos'); setFiltroTipo('todos'); setFiltroCoach('todos') }}
-              className="text-[11px] text-pink-400 hover:text-pink-300 transition-colors"
+              className="text-[11px] text-pink-500 hover:text-pink-400 transition-colors"
             >
               Limpiar filtros ✕
             </button>
@@ -397,7 +398,7 @@ export default function AlumnosList({
                 ${idx === alumnosFiltrados.length - 1 ? 'rounded-b-xl border-b-0' : ''}`}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-pink-900/30 flex items-center justify-center text-xs font-bold text-pink-300 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-pink-900/30 flex items-center justify-center text-xs font-bold text-pink-400 shrink-0">
                   {alumno.nombre?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                 </div>
                 <div className="min-w-0">
@@ -459,7 +460,7 @@ export default function AlumnosList({
                     <div className="h-px bg-border my-1" />
                     <button
                       onClick={() => { setMenuAbierto(null); setConfirmEliminar(alumno) }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-pink-400 hover:text-pink-300 hover:bg-pink-900/20 transition-colors text-left"
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-pink-500 hover:text-pink-400 hover:bg-pink-900/20 transition-colors text-left"
                     >
                       <span className="text-base">✕</span> Eliminar
                     </button>
@@ -476,7 +477,7 @@ export default function AlumnosList({
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-surface border border-border-strong rounded-2xl p-6 w-full max-w-sm shadow-2xl">
             <div className="w-12 h-12 rounded-full bg-pink-900/30 flex items-center justify-center mx-auto mb-4">
-              <span className="text-pink-400 text-xl">✕</span>
+              <span className="text-pink-500 text-xl">✕</span>
             </div>
             <h3 className="text-foreground font-bold text-base text-center mb-1">¿Eliminar alumno?</h3>
             <p className="text-sm text-zinc-500 text-center mb-1">
@@ -489,9 +490,9 @@ export default function AlumnosList({
 
             {errorEliminar && (
               <div className="bg-pink-900/20 border border-pink-900/40 rounded-lg px-3 py-2.5 mb-4">
-                <p className="text-xs text-pink-300">{errorEliminar}</p>
-                <p className="text-[11px] text-pink-600 mt-1">
-                  Revisá la consola del navegador para más detalles (F12 → Console).
+                <p className="text-xs text-pink-400">{errorEliminar}</p>
+                <p className="text-[11px] text-pink-700 mt-1">
+                  Revisa la consola del navegador para más detalles (F12 → Console).
                 </p>
               </div>
             )}
@@ -507,7 +508,7 @@ export default function AlumnosList({
               <button
                 onClick={() => eliminarAlumno(confirmEliminar)}
                 disabled={eliminando}
-                className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
+                className="flex-1 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
               >
                 {eliminando ? 'Eliminando...' : errorEliminar ? 'Reintentar' : 'Sí, eliminar'}
               </button>
@@ -545,12 +546,20 @@ export default function AlumnosList({
                   ].map(({ label, field, type = 'text' }) => (
                     <div key={field}>
                       <label className="text-[10px] text-zinc-600 uppercase tracking-wider block mb-1">{label}</label>
-                      <input
-                        type={type}
-                        value={formEditar[field] || ''}
-                        onChange={e => setFormEditar(f => ({ ...f, [field]: e.target.value }))}
-                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 transition-colors"
-                      />
+                      {type === 'date' ? (
+                        <DateInput
+                          value={formEditar[field] || ''}
+                          onChange={e => setFormEditar(f => ({ ...f, [field]: e.target.value }))}
+                          className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
+                        />
+                      ) : (
+                        <input
+                          type={type}
+                          value={formEditar[field] || ''}
+                          onChange={e => setFormEditar(f => ({ ...f, [field]: e.target.value }))}
+                          className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
+                        />
+                      )}
                     </div>
                   ))}
                 </div>
@@ -568,7 +577,7 @@ export default function AlumnosList({
                       <input
                         value={formEditar[field] || ''}
                         onChange={e => setFormEditar(f => ({ ...f, [field]: e.target.value }))}
-                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
                       />
                     </div>
                   ))}
@@ -590,7 +599,7 @@ export default function AlumnosList({
                           onClick={() => setFormEditar(f => ({ ...f, tipo_clase: t }))}
                           className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
                             (formEditar.tipo_clase || 'Semi Personalizado') === t
-                              ? 'bg-pink-500/15 border-pink-500/40 text-pink-400'
+                              ? 'bg-pink-600/15 border-pink-600/40 text-pink-500'
                               : 'border-border text-zinc-500 hover:text-foreground bg-raised'
                           }`}
                         >
@@ -606,7 +615,7 @@ export default function AlumnosList({
                     <select
                       value={formEditar.plan || ''}
                       onChange={e => setFormEditar(f => ({ ...f, plan: e.target.value }))}
-                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500"
+                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600"
                     >
                       <option value="1x/sem">1 día</option>
                       <option value="2x/sem">2 días</option>
@@ -622,7 +631,7 @@ export default function AlumnosList({
                     <select
                       value={formEditar.coach_id || ''}
                       onChange={e => setFormEditar(f => ({ ...f, coach_id: e.target.value }))}
-                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500"
+                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600"
                     >
                       <option value="">Sin asignar</option>
                       {coaches.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
@@ -639,7 +648,7 @@ export default function AlumnosList({
                         value={formEditar[field] || ''}
                         onChange={e => setFormEditar(f => ({ ...f, [field]: e.target.value }))}
                         rows={2}
-                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 resize-none"
+                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 resize-none"
                       />
                     </div>
                   ))}
@@ -650,7 +659,7 @@ export default function AlumnosList({
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-[10px] text-zinc-500 uppercase tracking-widest">Horario semanal fijo</div>
                   <button type="button" onClick={agregarHorario}
-                    className="text-xs text-pink-400 hover:text-pink-300 transition-colors font-medium">
+                    className="text-xs text-pink-500 hover:text-pink-400 transition-colors font-medium">
                     + Agregar día
                   </button>
                 </div>
@@ -667,7 +676,7 @@ export default function AlumnosList({
                     >
                       <div className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
                         <select value={h.dia} disabled={h._eliminar} onChange={e => setHorario(idx, 'dia', e.target.value)}
-                          className="bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-pink-500 disabled:text-zinc-500">
+                          className="bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-pink-600 disabled:text-zinc-500">
                           {['lunes','martes','miercoles','jueves','viernes','sabado'].map(d => (
                             <option key={d} value={d}>
                               {d.charAt(0).toUpperCase() + d.slice(1).replace('miercoles','Miércoles').replace('sabado','Sábado')}
@@ -677,17 +686,17 @@ export default function AlumnosList({
                         <div className="flex gap-2 items-center">
                           <input type="time" value={h.hora?.slice(0, 5) || ''} disabled={h._eliminar}
                             onChange={e => setHorario(idx, 'hora', e.target.value)}
-                            className="flex-1 bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-pink-500 disabled:text-zinc-500" />
+                            className="flex-1 bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-pink-600 disabled:text-zinc-500" />
                           {/* Delete en móvil (col 2, fila 1) */}
                           <button type="button" onClick={() => marcarEliminarHorario(idx)}
                             className={`sm:hidden w-7 h-7 flex items-center justify-center rounded-lg text-sm shrink-0 ${
-                              h._eliminar ? 'text-green-500' : 'text-zinc-600 hover:text-pink-300'
+                              h._eliminar ? 'text-green-500' : 'text-zinc-600 hover:text-pink-400'
                             }`}>
                             {h._eliminar ? '↩' : '✕'}
                           </button>
                         </div>
                         <select value={h.tipo} disabled={h._eliminar} onChange={e => setHorario(idx, 'tipo', e.target.value)}
-                          className="col-span-2 sm:col-span-1 bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-pink-500 disabled:text-zinc-500">
+                          className="col-span-2 sm:col-span-1 bg-raised border border-border text-foreground rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-pink-600 disabled:text-zinc-500">
                           <option value="semipersonalizado">Semi Personalizado</option>
                           <option value="personalizado">Personalizado</option>
                         </select>
@@ -696,7 +705,7 @@ export default function AlumnosList({
                           className={`hidden sm:flex w-7 h-7 items-center justify-center rounded-lg text-sm transition-all ${
                             h._eliminar
                               ? 'text-green-500 hover:bg-green-900/20'
-                              : 'text-zinc-600 hover:text-pink-300 hover:bg-pink-900/20'
+                              : 'text-zinc-600 hover:text-pink-400 hover:bg-pink-900/20'
                           }`}
                           title={h._eliminar ? 'Restaurar' : 'Eliminar'}>
                           {h._eliminar ? '↩' : '✕'}
@@ -714,7 +723,7 @@ export default function AlumnosList({
               </div>
 
               {errorEdit && (
-                <p className="text-xs text-pink-300 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">
+                <p className="text-xs text-pink-400 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">
                   {errorEdit}
                 </p>
               )}
@@ -726,7 +735,7 @@ export default function AlumnosList({
                 Cancelar
               </button>
               <button onClick={guardarEditar} disabled={guardandoEdit}
-                className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
+                className="flex-1 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
                 {guardandoEdit ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </div>
@@ -758,7 +767,7 @@ export default function AlumnosList({
               ))}
             </div>
             <p className="text-xs text-zinc-600 text-center mb-5">
-              Podés agregar el alumno igual, pero el bloque superará el límite recomendado.
+              Puedes agregar el alumno igual, pero el bloque superará el límite recomendado.
             </p>
             <div className="flex gap-2">
               <button

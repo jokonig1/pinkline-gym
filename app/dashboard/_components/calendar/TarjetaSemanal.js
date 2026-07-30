@@ -1,12 +1,12 @@
 'use client'
-import { resolveColor } from './utils'
+import { resolveColor, nombreSlot } from './utils'
 
 export default function TarjetaSemanal({
   slot, coaches, soloEditarCoachId,
   onAbrirAcciones,
 }) {
   const color    = resolveColor(slot, coaches)
-  const firstName = slot.alumno?.nombre?.split(' ')[0] || '—'
+  const firstName = nombreSlot(slot).split(' ')[0]
 
   return (
     <div

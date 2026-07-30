@@ -1,11 +1,14 @@
 ﻿'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useTheme } from '@/app/providers'
 
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { theme } = useTheme()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -36,11 +39,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
+      <Link href="/" className="absolute top-6 left-6 inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-foreground transition-colors">
+        ← Volver al inicio
+      </Link>
+
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/imagenes pinkline/Pinkline-tagline.svg" alt="Pinkline" className="h-28 w-auto mx-auto object-contain" />
+          <img
+            src={theme === 'dark' ? '/imagenes pinkline/Pinkline-blanco-tagline.svg' : '/imagenes pinkline/Pinkline-tagline.svg'}
+            alt="Pinkline"
+            className="h-28 w-auto mx-auto object-contain"
+          />
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">

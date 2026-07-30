@@ -1,10 +1,14 @@
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth'
 
 function toDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 export async function GET() {
+  const { response } = await requireAuth(['admin'])
+  if (response) return response
+
   // Semana actual (lunes → sábado)
   const today = new Date()
   const dow   = today.getDay()
@@ -34,9 +38,10 @@ export async function GET() {
     { data: sesiones },
     { data: alumnosNuevosMes },
     { data: asistenciasHistoricas },
+    { data: costosRegistros },
   ] = await Promise.all([
     supabaseAdmin.from('alumnos').select('id, activo, plan, tipo_clase, coach_id, created_at'),
-    supabaseAdmin.from('alumno_horarios').select('alumno_id, dia, hora').eq('activo', true),
+    supabaseAdmin.from('alumno_horarios').select('alumno_id, dia, hora').eq('activo', true).is('fecha', null),
     supabaseAdmin.from('alumno_horarios_excepciones')
       .select('cancelado, fecha_nueva')
       .gte('fecha_original', mesInicio)
@@ -59,6 +64,12 @@ export async function GET() {
       .select('fecha, asistio')
       .gte('fecha', hace6mesesStr)
       .lte('fecha', mesActual),
+    supabaseAdmin.from('costos_mensuales')
+      .select('año, mes, total')
+      .order('año', { ascending: true })
+      .order('mes', { ascending: true })
+      .then(({ data }) => ({ data }))
+      .catch(() => ({ data: null })),
   ])
 
   // Asistencias de la semana para la tasa semanal
@@ -158,9 +169,23 @@ export async function GET() {
 
   const ingresosMes = activos.reduce((sum, a) => sum + precioAlumno(a), 0)
 
-  // Mes anterior: alumnos activos que ya existían antes del inicio de este mes
-  const activosMesAnterior = activos.filter(a => new Date(a.created_at) < inicioMes)
-  const ingresosMesAnterior = activosMesAnterior.reduce((sum, a) => sum + precioAlumno(a), 0)
+  // Mes anterior: todos los alumnos que existían antes del inicio de este mes (incluyendo los que se dieron de baja)
+  const alumnosMesAnterior = (alumnos || []).filter(a => new Date(a.created_at) < inicioMes)
+  const ingresosMesAnterior = alumnosMesAnterior.reduce((sum, a) => sum + precioAlumno(a), 0)
+
+  const CAPACIDAD_MAX  = 300
+  const COSTOS_DEFAULT = 3190659  // suma de ítems predeterminados
+
+  function getCostosForMonth(año, mes, registros) {
+    if (!registros || registros.length === 0) return COSTOS_DEFAULT
+    const exact = registros.find(r => r.año === año && r.mes === mes)
+    if (exact) return exact.total
+    // Registro previo más reciente (registros ya vienen ordenados asc)
+    const prev = registros
+      .filter(r => r.año < año || (r.año === año && r.mes < mes))
+      .slice(-1)[0]
+    return prev?.total ?? COSTOS_DEFAULT
+  }
 
   // ── Histórico mensual (últimos 6 meses) ──────────────────────────────────────
   const mesesLabel = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
@@ -182,14 +207,16 @@ export async function GET() {
     const clasesRealizadas = asistMes.filter(a => a.asistio).length
     const inasistencias    = asistMes.filter(a => !a.asistio).length
 
-    // Acumulado de alumnos activos al final de ese mes
+    // Alumnos al final de ese mes
     const fin = new Date(year, month + 1, 0) // último día del mes
     const alumnosMes = (alumnos || []).filter(a => new Date(a.created_at) <= fin)
-    const acumulados = alumnosMes.length
+    const esActual = year === today.getFullYear() && month === today.getMonth()
+    const acumulados = esActual ? activos.length : alumnosMes.length
 
-    // Ingresos estimados ese mes
-    const ingresos = alumnosMes.reduce((sum, a) => sum + precioAlumno(a), 0)
+    // Ingresos estimados ese mes (mes actual: solo activos; meses pasados: todos los registrados)
+    const ingresos = esActual ? ingresosMes : alumnosMes.reduce((sum, a) => sum + precioAlumno(a), 0)
 
+    const costos = getCostosForMonth(year, month + 1, costosRegistros)
     return {
       mes:    mesesLabel[month],
       key,
@@ -198,33 +225,91 @@ export async function GET() {
       inasistencias,
       acumulados,
       ingresos,
+      costos,
+      margen: ingresos - costos,
     }
   })
 
-  const CAPACIDAD_MAX = 300
+  const COSTOS_FIJOS = getCostosForMonth(today.getFullYear(), today.getMonth() + 1, costosRegistros)
+
+  // ── Financiero ───────────────────────────────────────────────────────────────
+  const margen        = ingresosMes - COSTOS_FIJOS
+  const margenPct     = ingresosMes > 0 ? Math.round((margen / ingresosMes) * 100) : 0
+  const precioPromedio = activos.length > 0 ? Math.round(ingresosMes / activos.length) : 0
+  const puntoEquilibrio = precioPromedio > 0 ? Math.ceil(COSTOS_FIJOS / precioPromedio) : null
+
+  // ── Tasa de retención = activos / total ───────────────────────────────────────
+  const tasaRetencion = (alumnos || []).length > 0
+    ? Math.round((activos.length / (alumnos || []).length) * 100)
+    : null
+
+  // ── Margen por coach ─────────────────────────────────────────────────────────
+  const nCoaches = (coaches || []).length || 1
+  const costoPorCoach = Math.round(COSTOS_FIJOS / nCoaches)
+
+  const margenPorCoach = porCoachArr.map(c => {
+    const coachProfile = (coaches || []).find(co => co.nombre === c.nombre)
+    const revenueCoach = activos
+      .filter(a => a.coach_id === coachProfile?.id)
+      .reduce((sum, a) => sum + precioAlumno(a), 0)
+    return {
+      ...c,
+      revenue:     revenueCoach,
+      costo:       costoPorCoach,
+      margen:      revenueCoach - costoPorCoach,
+      margenPct:   revenueCoach > 0 ? Math.round(((revenueCoach - costoPorCoach) / revenueCoach) * 100) : 0,
+    }
+  }).sort((a, b) => b.margen - a.margen)
+
+  // ── Adherencia a rutina = sesiones / asistencias confirmadas ─────────────────
+  const adherenciaRutina = asistieron > 0
+    ? Math.round(((sesiones || []).length / asistieron) * 100)
+    : null
 
   return Response.json({
-    semana:      { inicio: semanaInicio, fin: semanaFin },
-    capacidadMax: CAPACIDAD_MAX,
+    semana:        { inicio: semanaInicio, fin: semanaFin },
+    capacidadMax:  CAPACIDAD_MAX,
+
+    // Bloque Alumnos
     alumnos: {
-      total:        (alumnos || []).length,
-      activos:      activos.length,
-      inactivos:    inactivos.length,
-      conHorario:   alumnosConHorario,
+      total:         (alumnos || []).length,
+      activos:       activos.length,
+      inactivos:     inactivos.length,
+      conHorario:    alumnosConHorario,
       nuevosEsteMes: (alumnosNuevosMes || []).length,
     },
-    asistencia:  { total: totalAsistSem, asistieron: asistieronSem, tasa: tasaAsist },
-    excepciones: { cancelaciones, reagendamientos, total: cancelaciones + reagendamientos },
-    porPlan:     Object.entries(porPlan).map(([plan, count]) => ({ plan, count })),
-    porCoach:    porCoachArr,
-    clasesEstaSemana:     asistieron,
+    tasaRetencion,
+
+    // Bloque Financiero
     ingresosMes,
     ingresosMesAnterior,
-    sesionesRutina:       (sesiones || []).length,
-    coaches:              (coaches || []).length,
+    costosFijos:    COSTOS_FIJOS,
+    margen,
+    margenPct,
+    precioPromedio,
+    puntoEquilibrio,
+
+    // Bloque Coaches
+    porCoach:       margenPorCoach,
+    coaches:        (coaches || []).length,
+
+    // Bloque Planes
+    porPlan:        Object.entries(porPlan).map(([plan, count]) => ({ plan, count })),
+
+    // Bloque Operación
+    asistencia:     { total: totalAsistSem, asistieron: asistieronSem, tasa: tasaAsist },
+    excepciones:    { cancelaciones, reagendamientos, total: cancelaciones + reagendamientos },
+    clasesEstaSemana: asistieron,
     ocupacionPorHora,
     ocupacionPorDiaHora,
-    capacidadPorBloque:   16,
+    capacidadPorBloque: 16,
+
+    // Bloque Progreso
+    sesionesRutina: (sesiones || []).length,
+    adherenciaRutina,
+    asistieronMes:  asistieron,
+
+    // Histórico
     historico,
   })
 }

@@ -22,7 +22,7 @@ export default function CoachAlumnos() {
     <AlumnosList
       coachIdFiltro={coachId}
       mostrarAgregar={false}
-      rutaVer={(id) => `/dashboard/admin/alumnos/${id}`}
+      rutaVer={(id) => `/dashboard/coach/alumnos/${id}`}
     />
   )
 }

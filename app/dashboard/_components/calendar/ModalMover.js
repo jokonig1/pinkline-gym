@@ -1,4 +1,6 @@
-﻿'use client'
+'use client'
+import { nombreSlot } from './utils'
+import DateInput from '../DateInput'
 
 export default function ModalMover({
   slot, form, setForm,
@@ -13,7 +15,7 @@ export default function ModalMover({
           <div>
             <h3 className="text-foreground font-bold text-base">Mover clase</h3>
             <p className="text-xs text-zinc-500 mt-1">
-              <span className="text-foreground-2">{slot.alumno?.nombre}</span>
+              <span className="text-foreground-2">{nombreSlot(slot)}</span>
               {' · '}
               <span className="capitalize">{slot.dia}</span>
               {' '}{slot.hora?.slice(0, 5)}
@@ -31,11 +33,10 @@ export default function ModalMover({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-[11px] text-zinc-500 uppercase tracking-wider block mb-1.5">Nueva fecha</label>
-              <input
-                type="date"
+              <DateInput
                 value={form.fecha_nueva}
                 onChange={e => setForm(f => ({ ...f, fecha_nueva: e.target.value }))}
-                className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors"
               />
             </div>
             <div>
@@ -44,7 +45,7 @@ export default function ModalMover({
                 type="time"
                 value={form.hora_nueva}
                 onChange={e => setForm(f => ({ ...f, hora_nueva: e.target.value }))}
-                className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors"
               />
             </div>
           </div>
@@ -58,7 +59,7 @@ export default function ModalMover({
               value={form.motivo}
               onChange={e => setForm(f => ({ ...f, motivo: e.target.value }))}
               placeholder="Ej: Feriado, viaje, lesión..."
-              className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 placeholder-zinc-600 transition-colors"
+              className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600 placeholder-zinc-600 transition-colors"
             />
           </div>
 
@@ -67,7 +68,7 @@ export default function ModalMover({
           </p>
 
           {error && (
-            <p className="text-xs text-pink-300 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">
+            <p className="text-xs text-pink-400 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">
               {error}
             </p>
           )}
@@ -91,7 +92,7 @@ export default function ModalMover({
             <button
               onClick={onGuardar}
               disabled={guardando}
-              className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
+              className="flex-1 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
             >
               {guardando ? 'Guardando...' : 'Mover clase'}
             </button>

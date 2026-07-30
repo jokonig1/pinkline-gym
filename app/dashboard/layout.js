@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -50,7 +50,7 @@ export default function DashboardLayout({ children }) {
 
   if (loading) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-pink-500 text-2xl font-black tracking-widest animate-pulse">Pinkline</div>
+      <div className="text-pink-600 text-2xl font-black tracking-widest animate-pulse">PINKLINE</div>
     </div>
   )
 
@@ -61,7 +61,8 @@ export default function DashboardLayout({ children }) {
       { label: 'Coaches',   icon: '◈', href: '/dashboard/admin/coaches' },
       { label: 'Horarios',  icon: '▦', href: '/dashboard/admin/horarios' },
       { label: 'Rutinas',   icon: '◈', href: '/dashboard/admin/rutinas' },
-      { label: 'Métricas',  icon: '▦', href: '/dashboard/admin/kpis' },
+      { label: 'Traspasos', icon: '⇄', href: '/dashboard/admin/traspasos' },
+      { label: 'Métricas',  icon: '▲', href: '/dashboard/admin/kpis' },
       { label: 'Mi perfil', icon: '●', href: '/dashboard/admin/perfil' },
     ],
     coach: [
@@ -69,11 +70,12 @@ export default function DashboardLayout({ children }) {
       { label: 'Mis alumnos',  icon: '◉', href: '/dashboard/coach/alumnos' },
       { label: 'Mis horarios', icon: '▦', href: '/dashboard/coach/horarios' },
       { label: 'Rutinas',      icon: '◈', href: '/dashboard/coach/rutinas' },
+      { label: 'Traspasos',    icon: '⇄', href: '/dashboard/coach/traspasos' },
     ],
     alumno: [
-      { label: 'Mi Progreso', icon: '◈', href: '/dashboard/alumno' },
+      { label: 'Inicio',      icon: '⌂', href: '/dashboard/alumno' },
+      { label: 'Mi Progreso', icon: '◈', href: '/dashboard/alumno/progreso' },
       { label: 'Mis Clases',  icon: '▦', href: '/dashboard/alumno/clases' },
-      { label: 'Mi Rutina',   icon: '✓', href: '/dashboard/alumno/rutina' },
       { label: 'Mi Perfil',   icon: '●', href: '/dashboard/alumno/perfil' },
     ],
   }
@@ -105,16 +107,16 @@ export default function DashboardLayout({ children }) {
       ].join(' ')}>
 
         {/* Logo + botón cerrar (solo móvil) */}
-        <div className="p-5 border-b border-border flex items-center justify-between">
+        <div className="relative p-5 border-b border-border flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={theme === 'dark' ? '/imagenes pinkline/Pinkline-blanco-rosado.svg' : '/imagenes pinkline/Pinkline.svg'}
             alt="Pinkline"
-            className="h-8 w-auto object-contain mx-auto scale-[2.8]"
+            className="h-14 w-auto object-contain"
           />
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-zinc-500 hover:text-foreground w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover-md transition-colors"
+            className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-foreground w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover-md transition-colors"
             aria-label="Cerrar menú"
           >
             ✕
@@ -131,13 +133,13 @@ export default function DashboardLayout({ children }) {
                 onClick={() => { setSidebarOpen(false); router.push(item.href) }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left
                   ${isActive
-                    ? 'bg-pink-500/15 text-foreground'
+                    ? 'bg-pink-600/15 text-foreground'
                     : 'text-zinc-500 hover:text-foreground hover:bg-hover-md'
                   }`}
               >
                 <span className="text-base">{item.icon}</span>
                 <span>{item.label}</span>
-                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-pink-500" />}
+                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-pink-600" />}
               </button>
             )
           })}
@@ -162,7 +164,7 @@ export default function DashboardLayout({ children }) {
           </div>
           <button
             onClick={handleLogout}
-            className="w-full mt-1 text-xs text-zinc-600 hover:text-pink-400 transition-colors py-1.5 text-left px-2"
+            className="w-full mt-1 text-xs text-zinc-600 hover:text-pink-500 transition-colors py-1.5 text-left px-2"
           >
             Cerrar sesión →
           </button>
@@ -200,12 +202,28 @@ export default function DashboardLayout({ children }) {
             <button
               onClick={toggle}
               title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-foreground hover:bg-hover-md transition-colors text-base"
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-foreground hover:bg-hover-md transition-colors"
             >
-              {theme === 'dark' ? '☀' : '◑'}
+              {theme === 'dark' ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <line x1="12" y1="2" x2="12" y2="4" />
+                  <line x1="12" y1="20" x2="12" y2="22" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="2" y1="12" x2="4" y2="12" />
+                  <line x1="20" y1="12" x2="22" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
             </button>
 
-            <span className="bg-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap hidden xs:inline-block sm:inline-block">
+            <span className="bg-pink-600 text-white text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap hidden xs:inline-block sm:inline-block">
               {new Date().toLocaleDateString('es-CL', { month: 'short', year: 'numeric' })}
             </span>
           </div>

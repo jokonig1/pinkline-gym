@@ -1,15 +1,29 @@
+import { requireAuth } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { asistenciaSchema, parseBody } from '@/lib/schemas'
 
 /**
  * GET /api/asistencias?coach_id=X&fecha=YYYY-MM-DD[&alumno_horario_id=Y]
- * Sin alumno_horario_id → devuelve array de todas las asistencias del coach en esa fecha.
- * Con alumno_horario_id  → devuelve el objeto único de ese slot (o null).
  */
 export async function GET(req) {
+  const { response } = await requireAuth(['admin', 'coach', 'alumno'])
+  if (response) return response
+
   const { searchParams } = new URL(req.url)
   const coachId         = searchParams.get('coach_id')
   const alumnoHorarioId = searchParams.get('alumno_horario_id')
   const fecha           = searchParams.get('fecha')
+  const alumnoId        = searchParams.get('alumno_id')
+
+  // Historial completo de un alumno (usado por su propia vista "Mis clases")
+  if (alumnoId && !coachId) {
+    const { data } = await supabaseAdmin
+      .from('asistencias')
+      .select('*')
+      .eq('alumno_id', alumnoId)
+      .order('fecha')
+    return Response.json(data || [])
+  }
 
   if (!coachId || !fecha) return Response.json(alumnoHorarioId ? null : [])
 
@@ -31,25 +45,23 @@ export async function GET(req) {
 
 /**
  * POST /api/asistencias
- * Crea o actualiza (upsert) un registro de asistencia.
- * Body: { alumno_id, coach_id, alumno_horario_id, fecha, hora, asistio, notas }
  */
 export async function POST(req) {
-  const body = await req.json()
+  const { response } = await requireAuth(['admin', 'coach'])
+  if (response) return response
+
+  const { data: body, error: validationError } = parseBody(asistenciaSchema, await req.json())
+  if (validationError) return validationError
+
   const { alumno_id, coach_id, alumno_horario_id, fecha, hora, asistio, notas } = body
 
-  if (!alumno_id || !coach_id || !fecha) {
-    return Response.json({ error: 'alumno_id, coach_id y fecha son requeridos' }, { status: 400 })
-  }
-
-  // Buscar si ya existe para hacer upsert
   let query = supabaseAdmin
     .from('asistencias')
     .select('id')
-    .eq('alumno_id', alumno_id)
     .eq('coach_id', coach_id)
     .eq('fecha', fecha)
 
+  query = alumno_id ? query.eq('alumno_id', alumno_id) : query.is('alumno_id', null)
   if (alumno_horario_id) query = query.eq('alumno_horario_id', alumno_horario_id)
   const { data: existing } = await query.maybeSingle()
 
@@ -71,6 +83,6 @@ export async function POST(req) {
     result = { data, error }
   }
 
-  if (result.error) return Response.json({ error: result.error.message }, { status: 500 })
+  if (result.error) return Response.json({ error: 'Error al guardar la asistencia' }, { status: 500 })
   return Response.json(result.data)
 }

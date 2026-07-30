@@ -1,42 +1,66 @@
+import { requireAuth } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { actualizarRutinaSchema, uuid, parseBody } from '@/lib/schemas'
 
-/**
- * PUT /api/rutinas-predefinidas/[id]
- * Actualiza nombre y/o ejercicios de la rutina.
- */
 export async function PUT(req, { params }) {
-  const { id } = params
-  const body   = await req.json()
-  const { nombre, ejercicios, orden } = body
+  const { response } = await requireAuth(['admin', 'coach'])
+  if (response) return response
+
+  const { id } = await params
+  const idResult = uuid.safeParse(id)
+  if (!idResult.success) return Response.json({ error: 'ID inválido' }, { status: 400 })
+
+  const { data: body, error: validationError } = parseBody(actualizarRutinaSchema, await req.json())
+  if (validationError) return validationError
 
   const update = {}
-  if (nombre    !== undefined) update.nombre     = nombre
-  if (ejercicios !== undefined) update.ejercicios = ejercicios
-  if (orden     !== undefined) update.orden      = orden
+  if (body.nombre     !== undefined) update.nombre     = body.nombre
+  if (body.ejercicios !== undefined) update.ejercicios = body.ejercicios
 
-  const { data, error } = await supabaseAdmin
-    .from('rutinas_predefinidas')
-    .update(update)
-    .eq('id', id)
-    .select()
-    .single()
+  let data = null
+  if (Object.keys(update).length > 0) {
+    const res = await supabaseAdmin
+      .from('rutinas_predefinidas')
+      .update(update)
+      .eq('id', idResult.data)
+      .select()
+      .single()
+    if (res.error) return Response.json({ error: 'Error al actualizar la rutina' }, { status: 500 })
+    data = res.data
+  }
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  // categoria_ids reemplaza por completo el conjunto de categorías asignadas.
+  if (body.categoria_ids !== undefined) {
+    await supabaseAdmin.from('rutinas_predefinidas_categorias').delete().eq('rutina_id', idResult.data)
+    if (body.categoria_ids.length > 0) {
+      const { error: errAsig } = await supabaseAdmin
+        .from('rutinas_predefinidas_categorias')
+        .insert(body.categoria_ids.map(categoria_id => ({ rutina_id: idResult.data, categoria_id })))
+      if (errAsig) return Response.json({ error: 'Error al asignar las categorías' }, { status: 500 })
+    }
+  }
+
+  if (!data) {
+    const { data: fresh } = await supabaseAdmin.from('rutinas_predefinidas').select().eq('id', idResult.data).single()
+    data = fresh
+  }
+
   return Response.json(data)
 }
 
-/**
- * DELETE /api/rutinas-predefinidas/[id]
- * Marca la rutina como inactiva (soft delete).
- */
 export async function DELETE(req, { params }) {
-  const { id } = params
+  const { response } = await requireAuth(['admin', 'coach'])
+  if (response) return response
+
+  const { id } = await params
+  const idResult = uuid.safeParse(id)
+  if (!idResult.success) return Response.json({ error: 'ID inválido' }, { status: 400 })
 
   const { error } = await supabaseAdmin
     .from('rutinas_predefinidas')
     .update({ activo: false })
-    .eq('id', id)
+    .eq('id', idResult.data)
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return Response.json({ error: 'Error al eliminar la rutina' }, { status: 500 })
   return Response.json({ ok: true })
 }
