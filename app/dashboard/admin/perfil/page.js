@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { COLORES_COACH } from '@/lib/constants'
@@ -107,7 +107,7 @@ export default function AdminPerfilPage() {
         )}
 
         {error && (
-          <p className="text-xs text-pink-300 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2 mb-3">
+          <p className="text-xs text-pink-400 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2 mb-3">
             {error}
           </p>
         )}
@@ -120,7 +120,7 @@ export default function AdminPerfilPage() {
         <button
           onClick={guardar}
           disabled={saving || color === profile?.color}
-          className="bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold px-6 py-2.5 rounded-lg transition-colors"
+          className="bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-sm font-bold px-6 py-2.5 rounded-lg transition-colors"
         >
           {saving ? 'Guardando...' : 'Guardar color'}
         </button>

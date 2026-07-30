@@ -45,7 +45,7 @@ export default function DetalleCoach() {
 
       {/* Header */}
       <div className="bg-surface border border-border rounded-xl p-5 mb-4 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-pink-900/30 flex items-center justify-center text-xl font-black text-pink-300">
+        <div className="w-14 h-14 rounded-full bg-pink-900/30 flex items-center justify-center text-xl font-black text-pink-400">
           {initials}
         </div>
         <div className="flex-1">

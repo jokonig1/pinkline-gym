@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -55,8 +55,11 @@ export default function CoachesPage() {
 
   async function toggleActivo(coach) {
     setMenuAbierto(null)
-    const supabase = createClient()
-    await supabase.from('profiles').update({ activo: !coach.activo }).eq('id', coach.id)
+    await fetch('/api/actualizar-coach', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: coach.id, activo: !coach.activo }),
+    })
     refetch()
   }
 
@@ -64,10 +67,10 @@ export default function CoachesPage() {
     setMenuAbierto(null)
     setErrorEditar('')
     setFormEditar({
-      id:       coach.id,
-      nombre:   coach.nombre   || '',
-      telefono: coach.telefono || '',
-      color:    coach.color    ?? null,
+      id:     coach.id,
+      nombre: coach.nombre || '',
+      email:  coach.email  || '',
+      color:  coach.color  ?? null,
     })
     setModalEditar(coach)
   }
@@ -80,10 +83,10 @@ export default function CoachesPage() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        id:       formEditar.id,
-        nombre:   formEditar.nombre,
-        telefono: formEditar.telefono,
-        color:    formEditar.color,
+        id:     formEditar.id,
+        nombre: formEditar.nombre,
+        email:  formEditar.email,
+        color:  formEditar.color,
       }),
     })
 
@@ -117,7 +120,7 @@ export default function CoachesPage() {
         </div>
         <button
           onClick={() => router.push('/dashboard/admin/coaches/nuevo')}
-          className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-colors"
+          className="bg-pink-600 hover:bg-pink-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-colors"
         >
           + Nuevo coach
         </button>
@@ -135,7 +138,7 @@ export default function CoachesPage() {
           const colorIdx  = coach.color !== null && coach.color !== undefined ? Number(coach.color) : i
           const color     = COLORES_COACH[colorIdx % COLORES_COACH.length]
           const initials  = coach.nombre?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-          const capacidad = Math.min(Math.round((coach.total_alumnos / 35) * 100), 100)
+          const capacidad = Math.min(Math.round((coach.total_alumnos / 50) * 100), 100)
 
           return (
             <div key={coach.id}
@@ -226,12 +229,12 @@ export default function CoachesPage() {
               <div>
                 <div className="flex justify-between text-[10px] text-zinc-500 mb-1.5">
                   <span>Ocupación</span>
-                  <span>{coach.total_alumnos}/35</span>
+                  <span>{coach.total_alumnos}/50</span>
                 </div>
                 <div className="h-1.5 bg-raised rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      capacidad >= 90 ? 'bg-pink-400' :
+                      capacidad >= 90 ? 'bg-pink-500' :
                       capacidad >= 70 ? 'bg-yellow-500' : 'bg-green-500'
                     }`}
                     style={{ width: `${capacidad}%` }}
@@ -261,19 +264,20 @@ export default function CoachesPage() {
               <div>
                 <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Nombre completo</label>
                 <input
-                  value={formEditar.nombre}
+                  value={formEditar.nombre || ''}
                   onChange={e => setFormEditar(f => ({ ...f, nombre: e.target.value }))}
-                  className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                  className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Teléfono</label>
+                <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Correo</label>
                 <input
-                  value={formEditar.telefono}
-                  onChange={e => setFormEditar(f => ({ ...f, telefono: e.target.value }))}
-                  placeholder="+56 9 xxxx xxxx"
-                  className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors placeholder-zinc-600"
+                  type="email"
+                  value={formEditar.email || ''}
+                  onChange={e => setFormEditar(f => ({ ...f, email: e.target.value }))}
+                  placeholder="coach@ejemplo.com"
+                  className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors placeholder-zinc-600"
                 />
               </div>
 
@@ -310,7 +314,7 @@ export default function CoachesPage() {
               </div>
 
               {errorEditar && (
-                <p className="text-xs text-pink-300 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">
+                <p className="text-xs text-pink-400 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">
                   {errorEditar}
                 </p>
               )}
@@ -322,7 +326,7 @@ export default function CoachesPage() {
                 Cancelar
               </button>
               <button onClick={guardarEditar} disabled={guardando}
-                className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
+                className="flex-1 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
                 {guardando ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </div>

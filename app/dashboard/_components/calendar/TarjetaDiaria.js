@@ -1,11 +1,12 @@
 'use client'
-import { resolveColor } from './utils'
+import { resolveColor, nombreSlot } from './utils'
 
 export default function TarjetaDiaria({
   slot, coaches, soloEditarCoachId,
   onAbrirAcciones,
 }) {
-  const color = resolveColor(slot, coaches)
+  const color  = resolveColor(slot, coaches)
+  const nombre = nombreSlot(slot)
 
   return (
     <div
@@ -18,18 +19,19 @@ export default function TarjetaDiaria({
         className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0"
         style={{ background: color.border + '25', color: color.text }}
       >
-        {slot.alumno?.nombre?.split(' ').map(n => n[0]).join('').slice(0, 2)}
+        {nombre.split(' ').map(n => n[0]).join('').slice(0, 2)}
       </div>
 
       {/* Nombre + tipo */}
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold truncate leading-tight" style={{ color: color.border }}>
-          {slot.alumno?.nombre}
+          {nombre}
         </div>
         <div className="text-[11px] truncate leading-tight mt-0.5" style={{ color: color.border + 'bb' }}>
           {slot.tipo === 'semipersonalizado' ? 'Semi Personalizado' : 'Personalizado'}
           {slot.coach?.nombre && <span> · {slot.coach.nombre.split(' ')[0]}</span>}
           {slot._movida && <span style={{ color: '#f59e0b' }}> · Reagendada</span>}
+          {slot._cubiertoDe && <span style={{ color: '#f59e0b' }}> · Cubriendo a {slot._cubiertoDe.split(' ')[0]}</span>}
         </div>
       </div>
 

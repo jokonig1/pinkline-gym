@@ -1,25 +1,41 @@
-﻿'use client'
+'use client'
 import { useState, Fragment, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { DIAS, DIAS_LABEL, DIAS_LABEL_LARGO, HORAS, COLORES_COACH } from '@/lib/constants'
-import { toDateStr, resolveColor } from './calendar/utils'
+import { DIAS, DIAS_LABEL, HORAS, COLORES_COACH } from '@/lib/constants'
+import { toDateStr, resolveColor, nombreSlot, coachEfectivo } from './calendar/utils'
 import TarjetaSemanal from './calendar/TarjetaSemanal'
 import TarjetaDiaria  from './calendar/TarjetaDiaria'
 import ModalMover     from './calendar/ModalMover'
+import DateInput      from './DateInput'
 
 const DIAS_2 = { lunes:'Lu', martes:'Ma', miercoles:'Mi', jueves:'Ju', viernes:'Vi', sabado:'Sá' }
 
 const FORM_EXTRA_INIT = {
-  alumno_id:'', busqueda:'', nombre:'', telefono:'', plan:'3x/sem', coach_id:'',
-  dia:'lunes', hora:'08:00', tipo:'semipersonalizado',
+  alumno_id:'', busqueda:'', nombre:'', telefono:'', coach_id:'',
+  fecha:'', hora:'08:00', tipo:'semipersonalizado',
+}
+
+// Quita tildes/diacríticos y pasa a minúsculas, para buscar sin importar acentos.
+function normalizar(s) {
+  return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+}
+
+// Deriva el día de semana ('lunes'...'sabado') a partir de una fecha "YYYY-MM-DD".
+// Devuelve null para domingo, ya que no hay clases ese día.
+function diaFromFecha(fechaStr) {
+  if (!fechaStr) return null
+  const d = new Date(fechaStr + 'T00:00:00')
+  const idx = (d.getDay() + 6) % 7
+  return idx < 6 ? DIAS[idx] : null
 }
 
 export default function HorariosCalendar({
-  horarios, excepciones, coaches, semana,
+  horarios, excepciones, traspasos = [], coaches, semana,
   semanaOffset, setSemanaOffset,
   onGuardar, onDeshacer,
   soloEditarCoachId = null,
+  rutasAdmin = false,
 }) {
   const router = useRouter()
 
@@ -35,8 +51,11 @@ export default function HorariosCalendar({
   // Filtro por coach
   const [coachFiltro, setCoachFiltro] = useState(soloEditarCoachId || null)
 
-  // Modal acciones rápidas (Ver perfil / Mover clase)
-  const [slotAccion,   setSlotAccion]   = useState(null)
+  // Modal acciones rápidas (Ver perfil / Mover clase / Eliminar clase)
+  const [slotAccion,      setSlotAccion]      = useState(null)
+  const [confirmEliminar, setConfirmEliminar] = useState(false)
+  const [eliminando,      setEliminando]      = useState(false)
+  const [errorEliminar,   setErrorEliminar]   = useState('')
 
   const [modalSlot,    setModalSlot]    = useState(null)
   const [moverForm,    setMoverForm]    = useState({ fecha_nueva:'', hora_nueva:'', motivo:'' })
@@ -49,6 +68,7 @@ export default function HorariosCalendar({
   const [tipoAlumno,     setTipoAlumno]     = useState(null)
   const [alumnos,        setAlumnos]        = useState([])
   const [loadingAlumnos, setLoadingAlumnos] = useState(false)
+  const [coachBusqueda,  setCoachBusqueda]  = useState('')
   const [formExtra,      setFormExtra]      = useState(FORM_EXTRA_INIT)
   const [guardandoExtra, setGuardandoExtra] = useState(false)
   const [errorExtra,     setErrorExtra]     = useState('')
@@ -57,11 +77,37 @@ export default function HorariosCalendar({
 
   function abrirAcciones(slot) {
     setSlotAccion(slot)
+    setConfirmEliminar(false)
+    setErrorEliminar('')
+  }
+
+  async function eliminarClase() {
+    setEliminando(true)
+    setErrorEliminar('')
+    try {
+      if (slotAccion.fecha) {
+        // Clase puntual (extra/sobrecupo/invitado): solo existía para esa fecha, se borra directo.
+        const supabase = createClient()
+        const { error } = await supabase.from('alumno_horarios').delete().eq('id', slotAccion.id)
+        if (error) throw new Error(error.message)
+        setSlotAccion(null)
+        window.location.reload()
+        return
+      }
+      // Clase recurrente: se cancela solo esta semana (reversible con "Restaurar").
+      await onGuardar(slotAccion, { fecha_nueva: null, hora_nueva: null, motivo: 'Eliminada', cancelado: true })
+      setSlotAccion(null)
+    } catch (err) {
+      setErrorEliminar(err.message || 'Error al eliminar.')
+    } finally {
+      setEliminando(false)
+    }
   }
 
   function irAPerfil() {
     if (slotAccion?.alumno?.id) {
-      router.push(`/dashboard/admin/alumnos/${slotAccion.alumno.id}`)
+      const base = rutasAdmin ? '/dashboard/admin/alumnos' : '/dashboard/coach/alumnos'
+      router.push(`${base}/${slotAccion.alumno.id}`)
     }
     setSlotAccion(null)
   }
@@ -74,9 +120,19 @@ export default function HorariosCalendar({
 
   // ── Datos ───────────────────────────────────────────────────────────────────
 
-  const horariosFiltrados = coachFiltro
-    ? horarios.filter(h => h.coach_id === coachFiltro)
-    : horarios
+  // Si hay un traspaso vigente para ese horario en esa fecha, el slot se ve y
+  // se filtra como si fuera del coach destino (quien lo cubre ese día).
+  function aplicarCobertura(h, fechaStr) {
+    const t = coachEfectivo(h, fechaStr, traspasos)
+    if (!t) return { ...h, _coachIdOriginal: h.coach_id }
+    return {
+      ...h,
+      coach_id: t.coach_destino_id,
+      coach: t.destino || h.coach,
+      _cubiertoDe: h.coach?.nombre || null,
+      _coachIdOriginal: h.coach_id,
+    }
+  }
 
   const hoy = new Date()
   const mesActual = new Date(hoy.getFullYear(), hoy.getMonth() + Math.floor(semanaOffset / 4.33), 1)
@@ -93,8 +149,11 @@ export default function HorariosCalendar({
     const fechaStr = fecha ? toDateStr(fecha) : undefined
     if (!fechaStr) return []
 
-    const regulares = horariosFiltrados
+    const regulares = horarios
       .filter(h => h.dia === dia && h.hora?.slice(0,5) === hora)
+      .filter(h => !h.fecha || h.fecha === fechaStr)
+      .map(h => aplicarCobertura(h, fechaStr))
+      .filter(h => !coachFiltro || h.coach_id === coachFiltro)
       .filter(h => {
         const exc = getExcepcion(h.id, fechaStr)
         return !exc || (!exc.cancelado && !exc.fecha_nueva && !exc.hora_nueva)
@@ -109,12 +168,13 @@ export default function HorariosCalendar({
         const h = horarios.find(x => x.id === exc.alumno_horario_id)
         const horaEfectiva = exc.hora_nueva?.slice(0,5) || h?.hora?.slice(0,5)
         if (horaEfectiva !== hora) return false
-        if (coachFiltro) return h?.coach_id === coachFiltro
+        if (coachFiltro) return h && aplicarCobertura(h, fechaStr).coach_id === coachFiltro
         return true
       })
       .map(exc => {
         const h = horarios.find(x => x.id === exc.alumno_horario_id)
-        return h ? { ...h, excepcion: exc, fechaStr: exc.fecha_original, _movida: true } : null
+        if (!h) return null
+        return { ...aplicarCobertura(h, fechaStr), excepcion: exc, fechaStr: exc.fecha_original, _movida: true }
       })
       .filter(Boolean)
 
@@ -134,7 +194,7 @@ export default function HorariosCalendar({
   }
 
   async function guardarMover() {
-    if (!moverForm.fecha_nueva || !moverForm.hora_nueva) { setErrorGuardar('Elegí la nueva fecha y hora.'); return }
+    if (!moverForm.fecha_nueva || !moverForm.hora_nueva) { setErrorGuardar('Elige la nueva fecha y hora.'); return }
     setGuardando(true); setErrorGuardar('')
     try { await onGuardar(modalSlot, moverForm); setModalSlot(null) }
     catch (err) { setErrorGuardar(err.message || 'Error al guardar.') }
@@ -161,8 +221,8 @@ export default function HorariosCalendar({
   // ── Modal agregar extra ─────────────────────────────────────────────────────
 
   function abrirModalAgregar() {
-    setModalAgregar(true); setPaso(1); setTipoAlumno(null); setAlumnos([])
-    setFormExtra({ ...FORM_EXTRA_INIT, coach_id: soloEditarCoachId || '' })
+    setModalAgregar(true); setPaso(1); setTipoAlumno(null); setAlumnos([]); setCoachBusqueda('')
+    setFormExtra({ ...FORM_EXTRA_INIT, coach_id: soloEditarCoachId || '', fecha: toDateStr(new Date()) })
     setErrorExtra(''); setCapWarningExtra(false); setExitoExtra(false)
   }
 
@@ -174,9 +234,7 @@ export default function HorariosCalendar({
   async function fetchAlumnos() {
     setLoadingAlumnos(true)
     const supabase = createClient()
-    let q = supabase.from('alumnos').select('id,nombre,plan,coach_id').eq('activo',true).order('nombre')
-    if (soloEditarCoachId) q = q.eq('coach_id', soloEditarCoachId)
-    const { data } = await q
+    const { data } = await supabase.from('alumnos').select('id,nombre,plan,coach_id').eq('activo',true).order('nombre')
     setAlumnos(data || [])
     setLoadingAlumnos(false)
   }
@@ -188,39 +246,39 @@ export default function HorariosCalendar({
 
   async function guardarExtra(forzar = false) {
     setErrorExtra('')
-    if (tipoAlumno === 'existente' && !formExtra.alumno_id) { setErrorExtra('Seleccioná un alumno.'); return }
+    if (tipoAlumno === 'existente' && !formExtra.alumno_id) { setErrorExtra('Selecciona un alumno.'); return }
     if (tipoAlumno === 'nuevo' && !formExtra.nombre.trim()) { setErrorExtra('El nombre es obligatorio.'); return }
+    const dia = diaFromFecha(formExtra.fecha)
+    if (!dia) { setErrorExtra('Elige una fecha válida (no hay clases los domingos).'); return }
     if (!forzar) {
       const supabase = createClient()
-      const { data } = await supabase.from('alumno_horarios').select('hora').eq('activo',true).eq('dia',formExtra.dia)
+      const { data } = await supabase.from('alumno_horarios').select('hora').eq('activo',true).eq('dia',dia)
       const count = (data||[]).filter(r => (r.hora||'').startsWith(formExtra.hora)).length
       if (count >= 16) { setCapWarningExtra(count); return }
     }
+
     setCapWarningExtra(false); setGuardandoExtra(true)
     const supabase = createClient()
     try {
-      let alumnoId = formExtra.alumno_id
-      if (tipoAlumno === 'nuevo') {
-        const { data: n, error: e } = await supabase.from('alumnos')
-          .insert([{ nombre: formExtra.nombre.trim(), telefono: formExtra.telefono.trim() || null,
-            plan: formExtra.plan, coach_id: formExtra.coach_id || soloEditarCoachId || null, activo: true }])
-          .select('id').single()
-        if (e) throw new Error(e.message)
-        alumnoId = n.id
+      const base = {
+        coach_id: formExtra.coach_id || soloEditarCoachId || null,
+        dia, hora: formExtra.hora, tipo: formExtra.tipo, activo: true,
+        fecha: formExtra.fecha,
       }
-      const { error: errH } = await supabase.from('alumno_horarios').insert([{
-        alumno_id: alumnoId, coach_id: formExtra.coach_id || soloEditarCoachId || null,
-        dia: formExtra.dia, hora: formExtra.hora, tipo: formExtra.tipo, activo: true,
-      }])
+      const fila = tipoAlumno === 'nuevo'
+        ? { ...base, alumno_id: null, invitado_nombre: formExtra.nombre.trim(), invitado_telefono: formExtra.telefono.trim() || null }
+        : { ...base, alumno_id: formExtra.alumno_id }
+
+      const { error: errH } = await supabase.from('alumno_horarios').insert([fila])
       if (errH) throw new Error(errH.message)
       setExitoExtra(true)
     } catch (err) { setErrorExtra(err.message || 'Error al guardar.')
     } finally { setGuardandoExtra(false) }
   }
 
-  const alumnosFiltrados = formExtra.busqueda.trim()
-    ? alumnos.filter(a => a.nombre?.toLowerCase().includes(formExtra.busqueda.toLowerCase()))
-    : alumnos
+  const alumnosFiltrados = alumnos
+    .filter(a => !coachBusqueda || a.coach_id === coachBusqueda)
+    .filter(a => !formExtra.busqueda.trim() || normalizar(a.nombre).includes(normalizar(formExtra.busqueda)))
 
   const tarjetaProps = {
     coaches, soloEditarCoachId,
@@ -245,7 +303,7 @@ export default function HorariosCalendar({
             ].map(({ key, label, short }) => (
               <button key={key} onClick={() => setVista(key)}
                 className={`px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
-                  vista === key ? 'bg-pink-500 text-white' : 'text-zinc-500 hover:text-foreground'
+                  vista === key ? 'bg-pink-600 text-white' : 'text-zinc-500 hover:text-foreground'
                 }`}>
                 <span className="sm:hidden">{short}</span>
                 <span className="hidden sm:inline">{label}</span>
@@ -281,7 +339,7 @@ export default function HorariosCalendar({
             <select
               value={coachFiltro || ''}
               onChange={e => setCoachFiltro(e.target.value || null)}
-              className="bg-surface border border-border text-foreground rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-pink-500 transition-colors"
+              className="bg-surface border border-border text-foreground rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-pink-600 transition-colors"
             >
               <option value="">Todos los coaches</option>
               {coaches.map((c, i) => (
@@ -306,13 +364,13 @@ export default function HorariosCalendar({
             {semana.map(({ dia, fecha }) => {
               const esHoy = fecha.toDateString() === hoy.toDateString()
               return (
-                <div key={dia} className={`bg-surface py-1 text-center ${esHoy ? 'bg-pink-500/5' : ''}`}>
+                <div key={dia} className={`bg-surface py-1 text-center ${esHoy ? 'bg-pink-600/5' : ''}`}>
                   {/* Abreviación de 2 letras en móvil, 3 letras en sm+ */}
                   <div className="text-[8px] font-bold text-zinc-500 uppercase tracking-wide">
                     <span className="sm:hidden">{DIAS_2[dia]}</span>
                     <span className="hidden sm:inline">{DIAS_LABEL[dia]}</span>
                   </div>
-                  <div className={`text-[10px] sm:text-xs font-black ${esHoy ? 'text-pink-400' : 'text-foreground'}`}>
+                  <div className={`text-[10px] sm:text-xs font-black ${esHoy ? 'text-pink-500' : 'text-foreground'}`}>
                     {fecha.getDate()}
                   </div>
                 </div>
@@ -364,11 +422,11 @@ export default function HorariosCalendar({
                 <button key={dia} onClick={() => setDiaSeleccionado(i)}
                   className={`shrink-0 flex flex-col items-center px-2.5 sm:px-3 py-1.5 rounded-xl transition-all ${
                     diaSeleccionado === i
-                      ? 'bg-pink-500 text-white'
+                      ? 'bg-pink-600 text-white'
                       : 'bg-surface border border-border text-zinc-500 hover:text-foreground'
                   }`}>
                   <span className="text-[9px] uppercase tracking-widest">{DIAS_2[dia]}</span>
-                  <span className={`text-sm sm:text-base font-black ${esHoy && diaSeleccionado !== i ? 'text-pink-400' : ''}`}>
+                  <span className={`text-sm sm:text-base font-black ${esHoy && diaSeleccionado !== i ? 'text-pink-500' : ''}`}>
                     {fecha.getDate()}
                   </span>
                 </button>
@@ -447,27 +505,26 @@ export default function HorariosCalendar({
                 const esDomingo = fecha.getDay() === 0
 
                 const slots = esDomingo ? [] : [
-                  ...horariosFiltrados.filter(h => {
-                    if (h.dia !== diaNombre) return false
-                    const exc = getExcepcion(h.id, fechaStr)
-                    return !exc || (!exc.cancelado && !exc.fecha_nueva)
-                  }),
+                  ...horarios
+                    .filter(h => h.dia === diaNombre)
+                    .filter(h => !h.fecha || h.fecha === fechaStr)
+                    .map(h => aplicarCobertura(h, fechaStr))
+                    .filter(h => !coachFiltro || h.coach_id === coachFiltro)
+                    .filter(h => {
+                      const exc = getExcepcion(h.id, fechaStr)
+                      return !exc || (!exc.cancelado && !exc.fecha_nueva)
+                    }),
                   ...excepciones
-                    .filter(exc => {
-                      if (!exc.cancelado && exc.fecha_nueva === fechaStr) {
-                        if (!coachFiltro) return true
-                        const h = horarios.find(x => x.id === exc.alumno_horario_id)
-                        return h?.coach_id === coachFiltro
-                      }
-                      return false
-                    })
+                    .filter(exc => !exc.cancelado && exc.fecha_nueva === fechaStr)
                     .map(exc => {
                       const h = horarios.find(x => x.id === exc.alumno_horario_id)
                       if (!h) return null
+                      const hc = aplicarCobertura(h, fechaStr)
                       // Aplicar hora nueva si existe
-                      return exc.hora_nueva ? { ...h, hora: exc.hora_nueva } : h
+                      return exc.hora_nueva ? { ...hc, hora: exc.hora_nueva } : hc
                     })
-                    .filter(Boolean),
+                    .filter(Boolean)
+                    .filter(h => !coachFiltro || h.coach_id === coachFiltro),
                 ]
 
                 celdas.push(
@@ -475,10 +532,10 @@ export default function HorariosCalendar({
                     onClick={() => !esDomingo && handleMesDiaClick(fecha)}
                     className={`bg-surface p-0.5 overflow-hidden transition-colors flex flex-col
                       ${!esDomingo ? 'cursor-pointer hover:bg-hover active:bg-hover-md' : ''}
-                      ${esHoy ? 'ring-1 ring-inset ring-pink-500/40' : ''}`}
+                      ${esHoy ? 'ring-1 ring-inset ring-pink-600/40' : ''}`}
                   >
                     <div className={`text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full mx-auto mb-px shrink-0 ${
-                      esHoy ? 'bg-pink-500 text-white' : esDomingo ? 'text-zinc-600' : 'text-zinc-500'
+                      esHoy ? 'bg-pink-600 text-white' : esDomingo ? 'text-zinc-600' : 'text-zinc-500'
                     }`}>{d}</div>
                     <div className="space-y-px flex-1 min-h-0 overflow-hidden">
                       {slots.slice(0, 2).map(slot => {
@@ -492,7 +549,7 @@ export default function HorariosCalendar({
                             className="text-[7px] px-0.5 py-px rounded truncate leading-tight cursor-pointer hover:brightness-125 active:scale-95"
                             style={{ background: color.bg, color: color.border }}
                           >
-                            {slot.alumno?.nombre?.split(' ')[0]}
+                            {nombreSlot(slot).split(' ')[0]}
                           </div>
                         )
                       })}
@@ -511,7 +568,7 @@ export default function HorariosCalendar({
 
       {/* ── Botón + agregar clase extra ── */}
       <button onClick={abrirModalAgregar} title="Agregar clase extra / sobrecupo"
-        className="fixed bottom-6 right-6 z-20 w-12 h-12 rounded-full bg-pink-500 hover:bg-pink-600 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl font-light active:scale-95">
+        className="fixed bottom-6 right-6 z-20 w-12 h-12 rounded-full bg-pink-600 hover:bg-pink-700 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl font-light active:scale-95">
         +
       </button>
 
@@ -528,11 +585,11 @@ export default function HorariosCalendar({
             {/* Info del slot */}
             <div className="px-5 pt-5 pb-4 border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-pink-900/30 flex items-center justify-center text-sm font-black text-pink-300 shrink-0">
-                  {slotAccion.alumno?.nombre?.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                <div className="w-10 h-10 rounded-full bg-pink-900/30 flex items-center justify-center text-sm font-black text-pink-400 shrink-0">
+                  {nombreSlot(slotAccion).split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-foreground">{slotAccion.alumno?.nombre}</div>
+                  <div className="text-sm font-bold text-foreground">{nombreSlot(slotAccion)}</div>
                   <div className="text-xs text-zinc-500 mt-0.5">
                     {slotAccion.hora?.slice(0, 5)}
                     {' · '}
@@ -540,6 +597,7 @@ export default function HorariosCalendar({
                     {' · '}
                     {slotAccion.tipo === 'semipersonalizado' ? 'Semi Personalizado' : 'Personalizado'}
                     {slotAccion._movida && <span className="text-amber-500"> · Reagendada</span>}
+                    {slotAccion._cubiertoDe && <span className="text-amber-500"> · Cubriendo a {slotAccion._cubiertoDe.split(' ')[0]}</span>}
                   </div>
                 </div>
               </div>
@@ -547,24 +605,28 @@ export default function HorariosCalendar({
 
             {/* Acciones */}
             <div className="p-3 space-y-1.5">
-              <button
-                onClick={irAPerfil}
-                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-hover-md transition-colors text-left"
-              >
-                <span className="text-lg">◉</span>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">Ver perfil</div>
-                  <div className="text-[11px] text-zinc-500">Historial, datos y rutinas del alumno</div>
-                </div>
-                <span className="ml-auto text-zinc-400">›</span>
-              </button>
+              {slotAccion.alumno?.id && (!soloEditarCoachId
+                || slotAccion.coach_id === soloEditarCoachId
+                || slotAccion._coachIdOriginal === soloEditarCoachId) && (
+                <button
+                  onClick={irAPerfil}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-hover-md transition-colors text-left"
+                >
+                  <span className="text-lg">◉</span>
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">Ver perfil</div>
+                    <div className="text-[11px] text-zinc-500">Historial, datos y rutinas del alumno</div>
+                  </div>
+                  <span className="ml-auto text-zinc-400">›</span>
+                </button>
+              )}
 
               {(!soloEditarCoachId || slotAccion.coach_id === soloEditarCoachId) && (
                 <button
                   onClick={irAMover}
                   className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-hover-md transition-colors text-left"
                 >
-                  <span className="text-lg">↗</span>
+                  <span className="text-lg">→</span>
                   <div>
                     <div className="text-sm font-semibold text-foreground">
                       {slotAccion.excepcion ? 'Editar cambio' : 'Mover clase'}
@@ -574,7 +636,53 @@ export default function HorariosCalendar({
                   <span className="ml-auto text-zinc-400">›</span>
                 </button>
               )}
+
+              {(!soloEditarCoachId || slotAccion.coach_id === soloEditarCoachId) && !confirmEliminar && (
+                <button
+                  onClick={() => setConfirmEliminar(true)}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-pink-900/10 transition-colors text-left"
+                >
+                  <span className="text-lg">✕</span>
+                  <div>
+                    <div className="text-sm font-semibold text-pink-400">Eliminar clase</div>
+                    <div className="text-[11px] text-zinc-500">
+                      {slotAccion.fecha ? 'Se borra por completo' : 'Se cancela solo esta semana'}
+                    </div>
+                  </div>
+                  <span className="ml-auto text-zinc-400">›</span>
+                </button>
+              )}
             </div>
+
+            {confirmEliminar && (
+              <div className="px-4 pb-3">
+                <div className="p-3 bg-pink-900/10 border border-pink-900/30 rounded-xl">
+                  <p className="text-xs text-zinc-400 mb-3">
+                    {slotAccion.fecha
+                      ? '¿Eliminar esta clase puntual? No se puede deshacer.'
+                      : '¿Eliminar esta clase de esta semana? La próxima semana vuelve a aparecer normal — se puede deshacer con "Restaurar".'}
+                  </p>
+                  {errorEliminar && (
+                    <p className="text-xs text-pink-400 mb-3">{errorEliminar}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setConfirmEliminar(false)}
+                      className="flex-1 border border-border-strong text-zinc-500 hover:text-foreground text-xs py-2 rounded-lg"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={eliminarClase}
+                      disabled={eliminando}
+                      className="flex-1 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-xs font-bold py-2 rounded-lg transition-colors"
+                    >
+                      {eliminando ? 'Eliminando…' : 'Sí, eliminar'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Cancelar */}
             <div className="px-3 pb-4">
@@ -582,7 +690,7 @@ export default function HorariosCalendar({
                 onClick={() => setSlotAccion(null)}
                 className="w-full py-3 rounded-xl border border-border-strong text-zinc-500 hover:text-foreground text-sm font-medium transition-all"
               >
-                Cancelar
+                Cerrar
               </button>
             </div>
           </div>
@@ -624,11 +732,9 @@ export default function HorariosCalendar({
                     <span className="text-green-500 text-2xl">✓</span>
                   </div>
                   <p className="text-foreground font-bold mb-1">¡Clase agregada!</p>
-                  <p className="text-sm text-zinc-500 mb-5">
-                    {tipoAlumno === 'nuevo' ? 'El alumno fue creado y su horario quedó registrado.' : 'El horario extra quedó registrado.'}
-                  </p>
+                  <p className="text-sm text-zinc-500 mb-5">El horario extra quedó registrado.</p>
                   <button onClick={cerrarModalAgregar}
-                    className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors">
+                    className="bg-pink-600 hover:bg-pink-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors">
                     Cerrar y actualizar
                   </button>
                 </div>
@@ -637,11 +743,11 @@ export default function HorariosCalendar({
                   <p className="text-xs text-zinc-500 mb-4">Este horario se agrega como clase extra, sin modificar el calendario regular del alumno.</p>
                   {[
                     { tipo:'existente', icon:'◉', titulo:'Alumno existente', sub:'Agregar una clase extra a alguien ya registrado' },
-                    { tipo:'nuevo',     icon:'+',  titulo:'Alumno nuevo',     sub:'Registrar a alguien nuevo con datos básicos' },
+                    { tipo:'nuevo',     icon:'+',  titulo:'Invitado',         sub:'Sin ficha de alumno — solo esta clase' },
                   ].map(({ tipo, icon, titulo, sub }) => (
                     <button key={tipo} onClick={() => elegirTipo(tipo)}
-                      className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-pink-500/50 hover:bg-pink-500/5 transition-all text-left">
-                      <div className="w-10 h-10 rounded-full bg-raised flex items-center justify-center shrink-0 text-lg font-bold text-pink-400">{icon}</div>
+                      className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-pink-600/50 hover:bg-pink-600/5 transition-all text-left">
+                      <div className="w-10 h-10 rounded-full bg-raised flex items-center justify-center shrink-0 text-lg font-bold text-pink-500">{icon}</div>
                       <div>
                         <div className="text-sm font-bold text-foreground">{titulo}</div>
                         <div className="text-xs text-zinc-500 mt-0.5">{sub}</div>
@@ -652,12 +758,22 @@ export default function HorariosCalendar({
                 </div>
               ) : tipoAlumno === 'existente' ? (
                 <div className="space-y-4">
+                  {coaches.length > 0 && (
+                    <div>
+                      <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Filtrar por coach</label>
+                      <select value={coachBusqueda} onChange={e => setCoachBusqueda(e.target.value)}
+                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600">
+                        <option value="">Todos los coaches</option>
+                        {coaches.map(c => <option key={c.id} value={c.id}>{c.nombre.split(' ')[0]}</option>)}
+                      </select>
+                    </div>
+                  )}
                   <div>
                     <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Alumno</label>
                     <input type="text" placeholder="Buscar por nombre..."
                       value={formExtra.busqueda}
                       onChange={e => setFormExtra(f => ({ ...f, busqueda: e.target.value, alumno_id:'' }))}
-                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors placeholder:text-zinc-600"
+                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors placeholder:text-zinc-600"
                     />
                     {loadingAlumnos ? (
                       <div className="text-xs text-zinc-500 text-center py-4">Cargando alumnos…</div>
@@ -669,31 +785,45 @@ export default function HorariosCalendar({
                           <button key={a.id}
                             onClick={() => setFormExtra(f => ({ ...f, alumno_id: a.id, busqueda: a.nombre }))}
                             className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors ${
-                              formExtra.alumno_id === a.id ? 'bg-pink-500/10 text-foreground' : 'hover:bg-hover text-foreground'
+                              formExtra.alumno_id === a.id ? 'bg-pink-600/10 text-foreground' : 'hover:bg-hover text-foreground'
                             }`}>
-                            <div className="w-7 h-7 rounded-full bg-pink-900/20 flex items-center justify-center text-[10px] font-bold text-pink-300 shrink-0">
+                            <div className="w-7 h-7 rounded-full bg-pink-900/20 flex items-center justify-center text-[10px] font-bold text-pink-400 shrink-0">
                               {a.nombre.split(' ').map(n => n[0]).join('').slice(0,2)}
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="truncate font-medium">{a.nombre}</div>
-                              <div className="text-[10px] text-zinc-500">{a.plan}</div>
+                              <div className="text-[10px] text-zinc-500">
+                                {a.plan}
+                                {coaches.find(c => c.id === a.coach_id)?.nombre &&
+                                  ` · ${coaches.find(c => c.id === a.coach_id).nombre.split(' ')[0]}`}
+                              </div>
                             </div>
-                            {formExtra.alumno_id === a.id && <span className="text-pink-400 text-sm shrink-0">✓</span>}
+                            {formExtra.alumno_id === a.id && <span className="text-pink-500 text-sm shrink-0">✓</span>}
                           </button>
                         ))}
                       </div>
                     )}
                   </div>
+                  {!soloEditarCoachId && coaches.length > 0 && (
+                    <div>
+                      <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Coach</label>
+                      <select value={formExtra.coach_id} onChange={e => setFormExtra(f => ({ ...f, coach_id: e.target.value }))}
+                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600">
+                        <option value="">Sin asignar</option>
+                        {coaches.map(c => <option key={c.id} value={c.id}>{c.nombre.split(' ')[0]}</option>)}
+                      </select>
+                    </div>
+                  )}
                   <HorarioForm formExtra={formExtra} setFormExtra={setFormExtra} />
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Nombre completo <span className="text-pink-400">*</span></label>
+                    <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Nombre completo <span className="text-pink-500">*</span></label>
                     <input type="text" value={formExtra.nombre}
                       onChange={e => setFormExtra(f => ({ ...f, nombre: e.target.value }))}
                       placeholder="Ej: Juan Pérez"
-                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors"
                     />
                   </div>
                   <div>
@@ -701,35 +831,19 @@ export default function HorariosCalendar({
                     <input type="tel" value={formExtra.telefono}
                       onChange={e => setFormExtra(f => ({ ...f, telefono: e.target.value }))}
                       placeholder="+56 9 xxxx xxxx"
-                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                      className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  {!soloEditarCoachId && coaches.length > 0 && (
                     <div>
-                      <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Plan</label>
-                      <select value={formExtra.plan} onChange={e => setFormExtra(f => ({ ...f, plan: e.target.value }))}
-                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500">
-                        <option value="1x/sem">1x/sem</option>
-                        <option value="2x/sem">2x/sem</option>
-                        <option value="3x/sem">3x/sem</option>
-                        <option value="4x/sem">4x/sem</option>
-                        <option value="5x/sem">5x/sem</option>
-                        <option value="6x/sem">6x/sem</option>
-                        <option value="Full">Full</option>
-                        <option value="Personalizado">Personalizado</option>
+                      <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Coach</label>
+                      <select value={formExtra.coach_id} onChange={e => setFormExtra(f => ({ ...f, coach_id: e.target.value }))}
+                        className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600">
+                        <option value="">Sin asignar</option>
+                        {coaches.map(c => <option key={c.id} value={c.id}>{c.nombre.split(' ')[0]}</option>)}
                       </select>
                     </div>
-                    {!soloEditarCoachId && coaches.length > 0 && (
-                      <div>
-                        <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Coach</label>
-                        <select value={formExtra.coach_id} onChange={e => setFormExtra(f => ({ ...f, coach_id: e.target.value }))}
-                          className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500">
-                          <option value="">Sin asignar</option>
-                          {coaches.map(c => <option key={c.id} value={c.id}>{c.nombre.split(' ')[0]}</option>)}
-                        </select>
-                      </div>
-                    )}
-                  </div>
+                  )}
                   <HorarioForm formExtra={formExtra} setFormExtra={setFormExtra} />
                 </div>
               )}
@@ -755,7 +869,7 @@ export default function HorariosCalendar({
               )}
 
               {errorExtra && (
-                <p className="mt-3 text-xs text-pink-300 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">{errorExtra}</p>
+                <p className="mt-3 text-xs text-pink-400 bg-pink-900/20 border border-pink-900/30 rounded-lg px-3 py-2">{errorExtra}</p>
               )}
             </div>
 
@@ -764,8 +878,8 @@ export default function HorariosCalendar({
                 <button onClick={cerrarModalAgregar}
                   className="flex-1 border border-border-strong text-zinc-500 hover:text-foreground text-sm py-2.5 rounded-xl transition-all">Cancelar</button>
                 <button onClick={() => guardarExtra(false)} disabled={guardandoExtra}
-                  className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
-                  {guardandoExtra ? 'Guardando…' : tipoAlumno === 'nuevo' ? 'Crear y agregar' : 'Agregar clase'}
+                  className="flex-1 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-colors">
+                  {guardandoExtra ? 'Guardando…' : 'Agregar clase'}
                 </button>
               </div>
             )}
@@ -784,18 +898,15 @@ function HorarioForm({ formExtra, setFormExtra }) {
       <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Horario extra</div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Día</label>
-          <select value={formExtra.dia} onChange={e => setFormExtra(f => ({ ...f, dia: e.target.value }))}
-            className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500">
-            {['lunes','martes','miercoles','jueves','viernes','sabado'].map(d => (
-              <option key={d} value={d}>{DIAS_LABEL_LARGO[d]}</option>
-            ))}
-          </select>
+          <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Fecha</label>
+          <DateInput value={formExtra.fecha} min={toDateStr(new Date())}
+            onChange={e => setFormExtra(f => ({ ...f, fecha: e.target.value }))}
+            className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600" />
         </div>
         <div>
           <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Hora</label>
           <select value={formExtra.hora} onChange={e => setFormExtra(f => ({ ...f, hora: e.target.value }))}
-            className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-500">
+            className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pink-600">
             {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
           </select>
         </div>
@@ -806,7 +917,7 @@ function HorarioForm({ formExtra, setFormExtra }) {
           {[{val:'personalizado',label:'Personalizado'},{val:'semipersonalizado',label:'Semi Personalizado'}].map(({val,label}) => (
             <button key={val} type="button" onClick={() => setFormExtra(f => ({ ...f, tipo: val }))}
               className={`flex-1 py-2.5 rounded-xl border text-xs font-bold transition-all ${
-                formExtra.tipo === val ? 'bg-pink-500/15 border-pink-500/40 text-pink-400' : 'border-border-strong text-zinc-500 hover:text-foreground'
+                formExtra.tipo === val ? 'bg-pink-600/15 border-pink-600/40 text-pink-500' : 'border-border-strong text-zinc-500 hover:text-foreground'
               }`}>
               {label}
             </button>

@@ -1,3 +1,4 @@
+import { requireAuth } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 
 /**
@@ -7,6 +8,8 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
  * pero los permisos de edición se controlan en el frontend (soloEditarCoachId).
  */
 export async function GET() {
+  const { response } = await requireAuth(['admin', 'coach'])
+  if (response) return response
   // Horarios con join a alumno y coach
   let { data: horarios, error: hErr } = await supabaseAdmin
     .from('alumno_horarios')
@@ -34,5 +37,11 @@ export async function GET() {
     excepciones = exc || []
   }
 
-  return Response.json({ horarios, excepciones })
+  // Traspasos temporales (todos, no solo los de hoy — el calendario navega a
+  // otras semanas/meses) para resolver qué coach cubre cada clase en cada fecha.
+  const { data: traspasos } = await supabaseAdmin
+    .from('traspasos_coach')
+    .select('*, origen:coach_origen_id(id,nombre), destino:coach_destino_id(id,nombre)')
+
+  return Response.json({ horarios, excepciones, traspasos: traspasos || [] })
 }

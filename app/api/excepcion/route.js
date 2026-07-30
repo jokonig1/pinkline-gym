@@ -1,18 +1,16 @@
+import { requireAuth } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { excepcionSchema, deshacerExcepcionSchema, parseBody } from '@/lib/schemas'
 
-/**
- * POST — upsert una excepción de horario (mover clase a otra fecha/hora esta semana)
- * Body: { alumno_horario_id, alumno_id, fecha_original, fecha_nueva, hora_nueva, motivo }
- */
 export async function POST(request) {
-  const { alumno_horario_id, alumno_id, fecha_original, fecha_nueva, hora_nueva, motivo } =
-    await request.json()
+  const { response } = await requireAuth(['admin', 'coach'])
+  if (response) return response
 
-  if (!alumno_horario_id || !fecha_original) {
-    return Response.json({ error: 'Faltan campos requeridos' }, { status: 400 })
-  }
+  const { data: body, error: validationError } = parseBody(excepcionSchema, await request.json())
+  if (validationError) return validationError
 
-  // Ver si ya existe una excepción para ese horario en esa fecha
+  const { alumno_horario_id, alumno_id, fecha_original, fecha_nueva, hora_nueva, motivo, cancelado } = body
+
   const { data: existente } = await supabaseAdmin
     .from('alumno_horarios_excepciones')
     .select('id')
@@ -22,12 +20,12 @@ export async function POST(request) {
 
   const payload = {
     alumno_horario_id,
-    alumno_id:      alumno_id  || null,
+    alumno_id:   alumno_id   || null,
     fecha_original,
-    fecha_nueva:    fecha_nueva || null,
-    hora_nueva:     hora_nueva  || null,
-    cancelado:      false,
-    motivo:         motivo      || '',
+    fecha_nueva: fecha_nueva || null,
+    hora_nueva:  hora_nueva  || null,
+    cancelado:   cancelado   || false,
+    motivo:      motivo      || '',
   }
 
   let error
@@ -42,23 +40,22 @@ export async function POST(request) {
       .insert([payload]))
   }
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return Response.json({ error: 'Error al guardar la excepción' }, { status: 500 })
   return Response.json({ ok: true })
 }
 
-/**
- * DELETE — elimina una excepción (restaurar al horario original)
- * Body: { id }
- */
 export async function DELETE(request) {
-  const { id } = await request.json()
-  if (!id) return Response.json({ error: 'Falta el id' }, { status: 400 })
+  const { response } = await requireAuth(['admin', 'coach'])
+  if (response) return response
+
+  const { data: body, error: validationError } = parseBody(deshacerExcepcionSchema, await request.json())
+  if (validationError) return validationError
 
   const { error } = await supabaseAdmin
     .from('alumno_horarios_excepciones')
     .delete()
-    .eq('id', id)
+    .eq('id', body.id)
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return Response.json({ error: 'Error al restaurar el horario' }, { status: 500 })
   return Response.json({ ok: true })
 }

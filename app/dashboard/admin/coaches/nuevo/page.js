@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { COLORES_COACH } from '@/lib/constants'
@@ -67,14 +67,14 @@ export default function NuevoCoach() {
           ].map(f => (
             <div key={f.field}>
               <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1.5">
-                {f.label} {f.required && <span className="text-pink-400">*</span>}
+                {f.label} {f.required && <span className="text-pink-500">*</span>}
               </label>
               <input
                 type={f.type}
                 value={form[f.field]}
                 onChange={e => set(f.field, e.target.value)}
                 required={f.required}
-                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500 transition-colors"
+                className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors"
               />
             </div>
           ))}
@@ -118,7 +118,7 @@ export default function NuevoCoach() {
           </div>
         </div>
 
-        {error && <p className="text-pink-400 text-sm">{error}</p>}
+        {error && <p className="text-pink-500 text-sm">{error}</p>}
 
         <div className="flex gap-3">
           <button type="button" onClick={() => router.back()}
@@ -126,7 +126,7 @@ export default function NuevoCoach() {
             Cancelar
           </button>
           <button type="submit" disabled={loading}
-            className="bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white font-bold px-8 py-2.5 rounded-lg transition-colors text-sm">
+            className="bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white font-bold px-8 py-2.5 rounded-lg transition-colors text-sm">
             {loading ? 'Creando...' : 'Crear coach'}
           </button>
         </div>
