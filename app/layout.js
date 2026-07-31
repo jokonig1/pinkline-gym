@@ -2,9 +2,21 @@ import './globals.css'
 import { ThemeProvider } from './providers'
 
 export const metadata = {
+  metadataBase: new URL('https://pinkline-gym.vercel.app'),
   title: 'Pinkline Gimnasio',
   description: 'Entrenamiento personalizado exclusivo para mujeres.',
   icons: { icon: '/imagenes pinkline/Pinkline-iso-rosado.svg' },
+  openGraph: {
+    title: 'Pinkline Gimnasio',
+    description: 'Entrenamiento personalizado exclusivo para mujeres.',
+    images: ['/imagenes pinkline/Pinkline-iso-rosado.svg'],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Pinkline Gimnasio',
+    description: 'Entrenamiento personalizado exclusivo para mujeres.',
+    images: ['/imagenes pinkline/Pinkline-iso-rosado.svg'],
+  },
 }
 
 export default function RootLayout({ children }) {

@@ -9,22 +9,67 @@ const DIRECCION = 'Doña Isabel 742, Lomas de lo Aguirre.'
 
 const TESTIMONIOS = [
   {
-    imagen:   '/exp3.jpeg',
+    imagen:   '/experiencia-1.jpg',
+    posicion: 'center 55%',
     texto:    'Llegué sin nunca haber entrenado y en 4 meses transformé mi cuerpo y mi energía. El seguimiento personalizado marcó toda la diferencia.',
     nombre:   'Valentina R.',
     servicio: 'Plan Personalizado · 3x/sem',
   },
   {
-    imagen:   '/exp4.jpeg',
+    imagen:   '/experiencia-2.jpg',
+    posicion: 'center 50%',
     texto:    'El ambiente de solo mujeres lo cambia todo. Me sentí cómoda desde el primer día y pude enfocarme completamente en mis objetivos.',
     nombre:   'Camila S.',
     servicio: 'Plan Semi Personalizado · 2x/sem',
   },
   {
-    imagen:   '/exp5.jpeg',
+    imagen:   '/experiencia-3.jpg',
+    posicion: 'center',
     texto:    'Acá te conocen, te guían y celebran cada logro. No se siente como un gimnasio más, sino como una comunidad real de mujeres.',
     nombre:   'Fernanda K.',
     servicio: 'Plan Semi Personalizado · 3x/sem',
+  },
+  {
+    imagen:   '/experiencia-4.jpg',
+    posicion: 'center 20%',
+    texto:    'Probé varios gimnasios antes y en ninguno me sentí tan acompañada. Acá cada coach sabe exactamente en qué etapa estás.',
+    nombre:   'Javiera M.',
+    servicio: 'Plan Personalizado · 4x/sem',
+  },
+  {
+    imagen:   '/experiencia-5.jpg',
+    posicion: 'center',
+    texto:    'Volví a entrenar después de mi embarazo y el plan se adaptó completamente a mi ritmo. Nunca me sentí presionada, solo apoyada.',
+    nombre:   'Antonia P.',
+    servicio: 'Plan Semi Personalizado · 2x/sem',
+  },
+  {
+    imagen:   '/experiencia-6.jpg',
+    posicion: 'center',
+    texto:    'Los horarios flexibles me permitieron mantener la constancia incluso en las semanas más ocupadas del trabajo.',
+    nombre:   'Constanza L.',
+    servicio: 'Plan Semi Personalizado · 3x/sem',
+  },
+  {
+    imagen:   '/experiencia-7.jpg',
+    posicion: 'center 22%',
+    texto:    'En seis meses no solo cambié físicamente, cambió mi disciplina y mi forma de cuidarme en general.',
+    nombre:   'Bárbara T.',
+    servicio: 'Plan Personalizado · 5x/sem',
+  },
+  {
+    imagen:   '/experiencia-8.jpg',
+    posicion: 'center 55%',
+    texto:    'Nunca me había animado a ir sola a un gimnasio. Acá desde la primera clase sentí que pertenecía.',
+    nombre:   'Millaray S.',
+    servicio: 'Plan Semi Personalizado · 1x/sem',
+  },
+  {
+    imagen:   '/experiencia-9.jpg',
+    posicion: 'center 28%',
+    texto:    'Lo que más valoro es que cada rutina se ajusta a mis tiempos de recuperación, no es un molde igual para todas.',
+    nombre:   'Ignacia D.',
+    servicio: 'Plan Personalizado · 6x/sem',
   },
 ]
 
@@ -45,20 +90,27 @@ function Carrusel() {
     return () => { if (timer.current) clearInterval(timer.current) }
   }, [])
 
-  const t = TESTIMONIOS[idx]
-
   return (
     <div className="relative max-w-3xl mx-auto">
-      <div className="relative rounded-2xl overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={t.imagen} alt="" className="w-full h-auto block" aria-hidden="true" />
-        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-          <p className="text-white text-sm sm:text-base leading-relaxed italic mb-4 drop-shadow">
-            &ldquo;{t.texto}&rdquo;
-          </p>
-          <div className="font-bold text-sm text-white">{t.nombre}</div>
-          <div className="text-pink-400 text-[11px] font-medium mt-0.5">{t.servicio}</div>
+      <div className="relative rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[16/9]">
+        <div
+          className="absolute inset-0 flex bg-zinc-900 transition-transform duration-700 ease-in-out"
+          style={{ transform: `translateX(-${idx * 100}%)` }}
+        >
+          {TESTIMONIOS.map((t, i) => (
+            <div key={i} className="relative w-full h-full shrink-0 bg-zinc-900">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={t.imagen} alt="" className="w-full h-full object-cover block" style={{ objectPosition: t.posicion }} aria-hidden="true" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+                <p className="text-white text-sm sm:text-base leading-relaxed italic mb-4 drop-shadow">
+                  &ldquo;{t.texto}&rdquo;
+                </p>
+                <div className="font-bold text-sm text-white">{t.nombre}</div>
+                <div className="text-pink-400 text-[11px] font-medium mt-0.5">{t.servicio}</div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       <div className="flex items-center justify-center gap-4 mt-5">
@@ -91,14 +143,14 @@ export default function LandingPage() {
     <div className="min-h-screen" style={{ background: '#fff', color: '#111' }}>
 
       {/* ── Navbar ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-zinc-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <a href="#inicio" className="shrink-0">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-zinc-100 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-3 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-10">
+          <a href="#inicio" className="shrink-0 justify-self-center ml-8 sm:ml-12">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/imagenes pinkline/Pinkline.svg" alt="Pinkline" className="h-9 sm:h-10 w-auto object-contain" />
+            <img src="/imagenes pinkline/Pinkline.svg" alt="Pinkline" className="h-11 sm:h-12 w-auto object-contain" />
           </a>
 
-          <div className="hidden md:flex items-center gap-7">
+          <div className="hidden md:flex items-center gap-10 justify-self-center">
             {[
               { label: 'Nosotras',  href: '#nosotras'  },
               { label: 'Servicios', href: '#servicios' },
@@ -107,19 +159,20 @@ export default function LandingPage() {
               { label: 'Contacto',  href: '#contacto'  },
             ].map(({ label, href }) => (
               <a key={href} href={href}
-                className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors font-medium">
+                className="group relative text-base text-zinc-500 hover:text-zinc-900 transition-colors font-medium py-1">
                 {label}
+                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-pink-500 rounded-full transition-all duration-300 group-hover:w-full" />
               </a>
             ))}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 justify-self-end shrink-0">
             <a href={waLink} target="_blank" rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-2 border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+              className="hidden sm:flex items-center gap-2 border border-zinc-200 text-zinc-700 hover:border-pink-200 hover:bg-pink-50/50 text-sm font-medium px-3.5 py-2 rounded-lg transition-colors">
               Clase de prueba gratis
             </a>
             <Link href="/login"
-              className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors">
+              className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-3.5 py-2 rounded-lg shadow-sm shadow-pink-500/30 hover:shadow-md hover:shadow-pink-500/40 transition-all">
               Ingresar
             </Link>
             <button onClick={() => setMenuOpen(v => !v)}
@@ -154,7 +207,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── HERO ── */}
-      <section id="inicio" className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-16 pb-6">
+      <section id="inicio" className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-20 pb-6">
         <div className="absolute inset-0 z-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/hero-bg.png" alt="" className="w-full h-full object-cover" aria-hidden="true" />
@@ -202,10 +255,10 @@ export default function LandingPage() {
               </h2>
               <div className="space-y-4 text-zinc-500 leading-relaxed text-sm sm:text-base">
                 <p>
-                  Pinkline nació con la idea de crear un espacio donde las mujeres puedan entrenar cómodas, seguras y acompañadas. Sin importar tu nivel o punto de partida, aquí encuentras el apoyo profesional que necesitas.
+                  En Pinkline creemos que entrenar debe sentirse como un espacio propio: cómodo, seguro y pensado exclusivamente para mujeres. No importa si estás empezando o ya tienes experiencia, siempre vas a contar con acompañamiento profesional real.
                 </p>
                 <p>
-                  Nuestro objetivo es ayudarte a construir hábitos saludables, superar tus propios límites y disfrutar el proceso. Porque en Pinkline cada entrenamiento cuenta y cada avance importa.
+                  Trabajamos para que construyas hábitos que te duren, avances a tu propio ritmo y disfrutes cada etapa del camino. Acá no entrenas sola: cada logro se celebra en comunidad.
                 </p>
               </div>
               <a href={waLink} target="_blank" rel="noopener noreferrer"
