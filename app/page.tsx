@@ -144,8 +144,14 @@ export default function LandingPage() {
 
       {/* ── Navbar ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-zinc-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-3 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-10">
-          <a href="#inicio" className="shrink-0 justify-self-center ml-8 sm:ml-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-3 h-20 grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-4 md:gap-10">
+          <button onClick={() => setMenuOpen(v => !v)}
+            className="md:hidden shrink-0 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-zinc-100 transition-colors text-zinc-700"
+            aria-label="Menú">
+            {menuOpen ? '✕' : '☰'}
+          </button>
+
+          <a href="#inicio" className="shrink-0 justify-self-center md:ml-8 lg:ml-12">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/imagenes pinkline/Pinkline.svg" alt="Pinkline" className="h-11 sm:h-12 w-auto object-contain" />
           </a>
@@ -175,11 +181,6 @@ export default function LandingPage() {
               className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-3.5 py-2 rounded-lg shadow-sm shadow-pink-500/30 hover:shadow-md hover:shadow-pink-500/40 transition-all">
               Ingresar
             </Link>
-            <button onClick={() => setMenuOpen(v => !v)}
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg hover:bg-zinc-100 transition-colors text-zinc-700"
-              aria-label="Menú">
-              {menuOpen ? '✕' : '☰'}
-            </button>
           </div>
         </div>
 
