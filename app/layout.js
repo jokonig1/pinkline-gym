@@ -9,13 +9,13 @@ export const metadata = {
   openGraph: {
     title: 'Pinkline Gimnasio',
     description: 'Entrenamiento personalizado exclusivo para mujeres.',
-    images: ['/experiencia-1.jpg'],
+    images: ['/foto.wsp.jpeg'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Pinkline Gimnasio',
     description: 'Entrenamiento personalizado exclusivo para mujeres.',
-    images: ['/experiencia-1.jpg'],
+    images: ['/foto.wsp.jpeg'],
   },
 }
 
