@@ -144,19 +144,30 @@ export default function LandingPage() {
 
       {/* ── Navbar ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-zinc-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-3 h-20 grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-4 md:gap-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-3 h-20 grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-4 md:gap-4 lg:gap-10">
           <button onClick={() => setMenuOpen(v => !v)}
             className="md:hidden shrink-0 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-zinc-100 transition-colors text-zinc-700"
             aria-label="Menú">
             {menuOpen ? '✕' : '☰'}
           </button>
 
-          <a href="#inicio" className="shrink-0 justify-self-center md:ml-8 lg:ml-12">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/imagenes pinkline/Pinkline.svg" alt="Pinkline" className="h-11 sm:h-12 w-auto object-contain" />
+          <a href="#inicio" className="shrink-0 justify-self-center lg:-ml-16 xl:-ml-24">
+            {/* El PNG tiene mucho espacio transparente arriba/abajo del logo real;
+                se recorta visualmente con un contenedor fijo + la imagen escalada
+                y desplazada para que solo se vea la franja del logo.
+                Tres tamaños: chico en mobile, mediano en tablet (md), grande en
+                desktop (lg, "la versión de computador" que ya quedó perfecta). */}
+            <div className="relative overflow-hidden w-[133px] h-6 md:w-[177px] md:h-8 lg:w-[244px] lg:h-11">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/imagenes pinkline/logosinfondo.png"
+                alt="Pinkline"
+                className="absolute max-w-none h-[117px] w-[176px] top-[-44px] left-[-22px] md:h-[156px] md:w-[234px] md:top-[-58px] md:left-[-29px] lg:h-[215px] lg:w-[322px] lg:top-[-80px] lg:left-[-40px]"
+              />
+            </div>
           </a>
 
-          <div className="hidden md:flex items-center gap-10 justify-self-center">
+          <div className="hidden md:flex items-center gap-4 lg:gap-10 justify-self-center">
             {[
               { label: 'Nosotras',  href: '#nosotras'  },
               { label: 'Servicios', href: '#servicios' },
@@ -165,7 +176,7 @@ export default function LandingPage() {
               { label: 'Contacto',  href: '#contacto'  },
             ].map(({ label, href }) => (
               <a key={href} href={href}
-                className="group relative text-base text-zinc-500 hover:text-zinc-900 transition-colors font-medium py-1">
+                className="group relative text-sm lg:text-base text-zinc-500 hover:text-zinc-900 transition-colors font-medium py-1">
                 {label}
                 <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-pink-500 rounded-full transition-all duration-300 group-hover:w-full" />
               </a>
@@ -174,7 +185,7 @@ export default function LandingPage() {
 
           <div className="flex items-center gap-2 justify-self-end shrink-0">
             <a href={waLink} target="_blank" rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-2 border border-zinc-200 text-zinc-700 hover:border-pink-200 hover:bg-pink-50/50 text-sm font-medium px-3.5 py-2 rounded-lg transition-colors">
+              className="hidden lg:flex items-center gap-2 border border-zinc-200 text-zinc-700 hover:border-pink-200 hover:bg-pink-50/50 text-sm font-medium px-3.5 py-2 rounded-lg transition-colors">
               Clase de prueba gratis
             </a>
             <Link href="/login"
