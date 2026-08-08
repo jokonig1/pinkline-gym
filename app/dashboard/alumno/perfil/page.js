@@ -4,20 +4,6 @@ import { createClient } from '@/lib/supabase/client'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
 import EmptyIcon from '@/app/dashboard/_components/EmptyIcon'
 
-function formatFecha(fechaStr) {
-  if (!fechaStr) return '—'
-  const [y, m, d] = fechaStr.split('-')
-  const M = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-  return `${parseInt(d)} ${M[parseInt(m)-1]} ${y}`
-}
-
-function diasRestantes(fechaStr) {
-  if (!fechaStr) return null
-  const hoy  = new Date(); hoy.setHours(0,0,0,0)
-  const venc = new Date(fechaStr + 'T00:00:00')
-  return Math.ceil((venc - hoy) / 86400000)
-}
-
 export default function AlumnoPerfil() {
   const [email,   setEmail]   = useState(null)
   const [alumno,  setAlumno]  = useState(null)
@@ -68,8 +54,7 @@ export default function AlumnoPerfil() {
     </div>
   )
 
-  const initials         = alumno.nombre?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-  const diasRestantesVal = diasRestantes(alumno.vencimiento_plan)
+  const initials = alumno.nombre?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
   return (
     <div className="max-w-lg space-y-4">
@@ -105,35 +90,6 @@ export default function AlumnoPerfil() {
                 ? new Date(alumno.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })
                 : '—'}
             </div>
-          </div>
-          <div className="col-span-2">
-            <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Vencimiento del plan</div>
-            {alumno.vencimiento_plan ? (
-              <div className="flex items-center gap-2">
-                <span className={`text-sm font-bold ${
-                  diasRestantesVal !== null && diasRestantesVal <= 7 ? 'text-pink-500' : 'text-foreground'
-                }`}>
-                  {formatFecha(alumno.vencimiento_plan)}
-                </span>
-                {diasRestantesVal !== null && (
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    diasRestantesVal <= 0
-                      ? 'bg-pink-500/10 text-pink-500'
-                      : diasRestantesVal <= 7
-                        ? 'bg-amber-500/10 text-amber-500'
-                        : 'bg-green-500/10 text-green-500'
-                  }`}>
-                    {diasRestantesVal <= 0
-                      ? 'Vencido'
-                      : `${diasRestantesVal} días restantes`}
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="text-sm text-zinc-500">
-                Sin fecha de vencimiento — consulta con el administrador
-              </div>
-            )}
           </div>
         </div>
       </div>

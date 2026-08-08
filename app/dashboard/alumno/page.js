@@ -16,20 +16,6 @@ function toDateStr(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
 }
 
-function diasRestantes(fechaStr) {
-  if (!fechaStr) return null
-  const hoy  = new Date(); hoy.setHours(0,0,0,0)
-  const venc = new Date(fechaStr + 'T00:00:00')
-  return Math.ceil((venc - hoy) / 86400000)
-}
-
-function formatFechaCorta(fechaStr) {
-  if (!fechaStr) return ''
-  const [, m, d] = fechaStr.split('-')
-  const M = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-  return `${parseInt(d)} ${M[parseInt(m)-1]}`
-}
-
 export default function AlumnoInicio() {
   const [alumno,      setAlumno]      = useState(null)
   const [horarios,    setHorarios]    = useState([])
@@ -69,8 +55,6 @@ export default function AlumnoInicio() {
     </div>
   )
 
-  const diasRestantesVal = diasRestantes(alumno.vencimiento_plan)
-  const vecesPorSemana   = horarios.filter(h => !h.fecha).length
   const esPersonalizado  = (alumno.tipo_clase || '').toLowerCase() === 'personalizado'
 
   // Clases de hoy (horario fijo del día + excepciones aplicadas)
@@ -118,7 +102,7 @@ export default function AlumnoInicio() {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Tipo</div>
             <div className="text-sm font-bold text-foreground">
@@ -127,7 +111,7 @@ export default function AlumnoInicio() {
           </div>
           <div>
             <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Veces por semana</div>
-            <div className="text-sm font-bold text-foreground">{vecesPorSemana}x/sem</div>
+            <div className="text-sm font-bold text-foreground">{alumno.plan || '—'}</div>
           </div>
           <div>
             <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Miembro desde</div>
@@ -136,25 +120,6 @@ export default function AlumnoInicio() {
                 ? new Date(alumno.created_at).toLocaleDateString('es-CL', { month: 'short', year: 'numeric' })
                 : '—'}
             </div>
-          </div>
-          <div>
-            <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Vencimiento</div>
-            {alumno.vencimiento_plan ? (
-              <div className={`text-sm font-bold ${
-                diasRestantesVal !== null && diasRestantesVal <= 7
-                  ? 'text-pink-500'
-                  : 'text-foreground'
-              }`}>
-                {formatFechaCorta(alumno.vencimiento_plan)}
-                {diasRestantesVal !== null && (
-                  <span className="text-[10px] font-normal text-zinc-500 ml-1.5">
-                    ({diasRestantesVal > 0 ? `${diasRestantesVal}d` : 'Vencido'})
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="text-sm text-zinc-500">—</div>
-            )}
           </div>
         </div>
 
