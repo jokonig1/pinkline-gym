@@ -305,8 +305,8 @@ function SeccionPeso({ alumnoId }) {
       )}
 
       {/* Form agregar peso */}
-      <form onSubmit={guardar} className="flex gap-2 items-end">
-        <div className="flex-1">
+      <form onSubmit={guardar} className="flex flex-col sm:flex-row gap-2 sm:items-end">
+        <div className="flex-1 min-w-0">
           <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1">
             Registrar peso
           </label>
@@ -319,12 +319,12 @@ function SeccionPeso({ alumnoId }) {
               value={peso}
               onChange={e => setPeso(e.target.value)}
               placeholder="kg"
-              className="w-24 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
+              className="w-20 sm:w-24 min-w-0 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
             />
             <DateInput
               value={fecha}
               onChange={e => setFecha(e.target.value)}
-              wrapperClassName="relative flex-1"
+              wrapperClassName="relative flex-1 min-w-0"
               className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
             />
           </div>
@@ -332,7 +332,7 @@ function SeccionPeso({ alumnoId }) {
         <button
           type="submit"
           disabled={guardando}
-          className="bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors shrink-0"
+          className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors shrink-0"
         >
           {guardando ? '…' : 'Agregar'}
         </button>
