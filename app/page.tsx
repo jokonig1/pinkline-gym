@@ -7,70 +7,16 @@ const WHATSAPP  = '+56986934684'   // ← número real de Pinkline
 const INSTAGRAM = 'pinkline.gym'   // ← sin @
 const DIRECCION = 'Doña Isabel 742, Lomas de lo Aguirre.'
 
-const TESTIMONIOS = [
-  {
-    imagen:   '/experiencia-1.jpg',
-    posicion: 'center 55%',
-    texto:    'Llegué sin nunca haber entrenado y en 4 meses transformé mi cuerpo y mi energía. El seguimiento personalizado marcó toda la diferencia.',
-    nombre:   'Valentina R.',
-    servicio: 'Plan Personalizado · 3x/sem',
-  },
-  {
-    imagen:   '/experiencia-2.jpg',
-    posicion: 'center 50%',
-    texto:    'El ambiente de solo mujeres lo cambia todo. Me sentí cómoda desde el primer día y pude enfocarme completamente en mis objetivos.',
-    nombre:   'Camila S.',
-    servicio: 'Plan Semi Personalizado · 2x/sem',
-  },
-  {
-    imagen:   '/experiencia-3.jpg',
-    posicion: 'center',
-    texto:    'Acá te conocen, te guían y celebran cada logro. No se siente como un gimnasio más, sino como una comunidad real de mujeres.',
-    nombre:   'Fernanda K.',
-    servicio: 'Plan Semi Personalizado · 3x/sem',
-  },
-  {
-    imagen:   '/experiencia-4.jpg',
-    posicion: 'center 20%',
-    texto:    'Probé varios gimnasios antes y en ninguno me sentí tan acompañada. Acá cada coach sabe exactamente en qué etapa estás.',
-    nombre:   'Javiera M.',
-    servicio: 'Plan Personalizado · 4x/sem',
-  },
-  {
-    imagen:   '/experiencia-5.jpg',
-    posicion: 'center',
-    texto:    'Volví a entrenar después de mi embarazo y el plan se adaptó completamente a mi ritmo. Nunca me sentí presionada, solo apoyada.',
-    nombre:   'Antonia P.',
-    servicio: 'Plan Semi Personalizado · 2x/sem',
-  },
-  {
-    imagen:   '/experiencia-6.jpg',
-    posicion: 'center',
-    texto:    'Los horarios flexibles me permitieron mantener la constancia incluso en las semanas más ocupadas del trabajo.',
-    nombre:   'Constanza L.',
-    servicio: 'Plan Semi Personalizado · 3x/sem',
-  },
-  {
-    imagen:   '/experiencia-7.jpg',
-    posicion: 'center 22%',
-    texto:    'En seis meses no solo cambié físicamente, cambió mi disciplina y mi forma de cuidarme en general.',
-    nombre:   'Bárbara T.',
-    servicio: 'Plan Personalizado · 5x/sem',
-  },
-  {
-    imagen:   '/experiencia-8.jpg',
-    posicion: 'center 55%',
-    texto:    'Nunca me había animado a ir sola a un gimnasio. Acá desde la primera clase sentí que pertenecía.',
-    nombre:   'Millaray S.',
-    servicio: 'Plan Semi Personalizado · 1x/sem',
-  },
-  {
-    imagen:   '/experiencia-9.jpg',
-    posicion: 'center 28%',
-    texto:    'Lo que más valoro es que cada rutina se ajusta a mis tiempos de recuperación, no es un molde igual para todas.',
-    nombre:   'Ignacia D.',
-    servicio: 'Plan Personalizado · 6x/sem',
-  },
+const IMAGENES_EXPERIENCIA = [
+  { imagen: '/experiencia-1.jpg', posicion: 'center 55%' },
+  { imagen: '/experiencia-2.jpg', posicion: 'center 50%' },
+  { imagen: '/experiencia-3.jpg', posicion: 'center' },
+  { imagen: '/experiencia-4.jpg', posicion: 'center 20%' },
+  { imagen: '/experiencia-5.jpg', posicion: 'center' },
+  { imagen: '/experiencia-6.jpg', posicion: 'center' },
+  { imagen: '/experiencia-7.jpg', posicion: 'center 22%' },
+  { imagen: '/experiencia-8.jpg', posicion: 'center 55%' },
+  { imagen: '/experiencia-9.jpg', posicion: 'center 28%' },
 ]
 
 // ── Carrusel ──────────────────────────────────────────────────────────────────
@@ -78,8 +24,8 @@ function Carrusel() {
   const [idx, setIdx] = useState(0)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  function siguiente() { setIdx(i => (i + 1) % TESTIMONIOS.length) }
-  function anterior()  { setIdx(i => (i - 1 + TESTIMONIOS.length) % TESTIMONIOS.length) }
+  function siguiente() { setIdx(i => (i + 1) % IMAGENES_EXPERIENCIA.length) }
+  function anterior()  { setIdx(i => (i - 1 + IMAGENES_EXPERIENCIA.length) % IMAGENES_EXPERIENCIA.length) }
   function resetTimer() {
     if (timer.current) clearInterval(timer.current)
     timer.current = setInterval(siguiente, 6000)
@@ -92,23 +38,15 @@ function Carrusel() {
 
   return (
     <div className="relative max-w-3xl mx-auto">
-      <div className="relative rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[16/9]">
+      <div className="relative rounded-2xl overflow-hidden aspect-4/3 sm:aspect-video">
         <div
           className="absolute inset-0 flex bg-zinc-900 transition-transform duration-700 ease-in-out"
           style={{ transform: `translateX(-${idx * 100}%)` }}
         >
-          {TESTIMONIOS.map((t, i) => (
+          {IMAGENES_EXPERIENCIA.map((t, i) => (
             <div key={i} className="relative w-full h-full shrink-0 bg-zinc-900">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={t.imagen} alt="" className="w-full h-full object-cover block" style={{ objectPosition: t.posicion }} aria-hidden="true" />
-              <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-                <p className="text-white text-sm sm:text-base leading-relaxed italic mb-4 drop-shadow">
-                  &ldquo;{t.texto}&rdquo;
-                </p>
-                <div className="font-bold text-sm text-white">{t.nombre}</div>
-                <div className="text-pink-400 text-[11px] font-medium mt-0.5">{t.servicio}</div>
-              </div>
             </div>
           ))}
         </div>
@@ -119,7 +57,7 @@ function Carrusel() {
           ←
         </button>
         <div className="flex gap-2">
-          {TESTIMONIOS.map((_, i) => (
+          {IMAGENES_EXPERIENCIA.map((_, i) => (
             <button key={i} onClick={() => { setIdx(i); resetTimer() }}
               className={`h-2 rounded-full transition-all ${i === idx ? 'bg-pink-500 w-6' : 'bg-zinc-300 w-2'}`} />
           ))}
@@ -157,12 +95,12 @@ export default function LandingPage() {
                 y desplazada para que solo se vea la franja del logo.
                 Tres tamaños: chico en mobile, mediano en tablet (md), grande en
                 desktop (lg, "la versión de computador" que ya quedó perfecta). */}
-            <div className="relative overflow-hidden w-[133px] h-6 md:w-[177px] md:h-8 lg:w-[244px] lg:h-11">
+            <div className="relative overflow-hidden w-[106.4px] h-[19.2px] md:w-[141.6px] md:h-[25.6px] lg:w-[195.2px] lg:h-[35.2px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/imagenes pinkline/logosinfondo.png"
                 alt="Pinkline"
-                className="absolute max-w-none h-[117px] w-[176px] top-[-44px] left-[-22px] md:h-[156px] md:w-[234px] md:top-[-58px] md:left-[-29px] lg:h-[215px] lg:w-[322px] lg:top-[-80px] lg:left-[-40px]"
+                className="absolute max-w-none h-[93.6px] w-[140.8px] top-[-35.2px] left-[-17.6px] md:h-[124.8px] md:w-[187.2px] md:top-[-46.4px] md:left-[-23.2px] lg:h-[172px] lg:w-[257.6px] lg:top-[-64px] lg:left-[-32px]"
               />
             </div>
           </a>
@@ -423,7 +361,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-sm sm:text-base font-extrabold uppercase tracking-[4px] text-pink-600 mb-4">Experiencias</div>
-            <h2 className="text-3xl sm:text-4xl font-black text-zinc-900">Lo que dicen nuestras alumnas</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-zinc-900">Momentos Pinkline</h2>
           </div>
           <Carrusel />
         </div>
