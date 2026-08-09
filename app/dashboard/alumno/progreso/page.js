@@ -310,7 +310,7 @@ function SeccionPeso({ alumnoId }) {
           <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1">
             Registrar peso
           </label>
-          <div className="flex gap-1.5 sm:gap-2">
+          <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
             <input
               type="number"
               step="0.1"
@@ -319,13 +319,13 @@ function SeccionPeso({ alumnoId }) {
               value={peso}
               onChange={e => setPeso(e.target.value)}
               placeholder="kg"
-              className="w-14 sm:w-24 min-w-0 bg-raised border border-border text-foreground rounded-lg px-2 sm:px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
+              className="w-full sm:w-24 min-w-0 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
             />
             <DateInput
               value={fecha}
               onChange={e => setFecha(e.target.value)}
-              wrapperClassName="relative flex-1 min-w-0"
-              className="w-full min-w-0 bg-raised border border-border text-foreground rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:outline-none focus:border-pink-600 transition-colors"
+              wrapperClassName="relative w-full sm:flex-1 min-w-0"
+              className="w-full min-w-0 bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
             />
           </div>
         </div>
