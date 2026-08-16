@@ -73,7 +73,7 @@ export async function POST(req) {
       : Promise.resolve(),
     ...actualizar.map(h =>
       supabaseAdmin.from('alumno_horarios')
-        .update({ dia: h.dia, hora: h.hora, tipo: h.tipo })
+        .update({ dia: h.dia, hora: h.hora, tipo: h.tipo, coach_id: alumno.coach_id })
         .eq('id', h.id).eq('alumno_id', alumno.id)
     ),
   ])
