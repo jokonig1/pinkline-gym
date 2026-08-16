@@ -131,7 +131,7 @@ export default function DetalleAlumno() {
         : Promise.resolve(),
       ...aActualizar.map(h =>
         supabase.from('alumno_horarios')
-          .update({ dia: h.dia, hora: h.hora, tipo: h.tipo })
+          .update({ dia: h.dia, hora: h.hora, tipo: h.tipo, coach_id: form.coach_id || null })
           .eq('id', h.id)
       ),
     ])
