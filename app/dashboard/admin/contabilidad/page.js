@@ -43,6 +43,8 @@ export default function Contabilidad() {
   const [form,      setForm]      = useState({})
   const [guardando, setGuardando] = useState(false)
   const [error,     setError]     = useState('')
+  const [confirmCancelar, setConfirmCancelar] = useState(false)
+  const [cancelando,      setCancelando]      = useState(false)
 
   useEffect(() => { cargar() }, [])
 
@@ -59,12 +61,32 @@ export default function Contabilidad() {
   function abrirModal(alumna) {
     setModal(alumna)
     setError('')
+    setConfirmCancelar(false)
     setForm({
       fecha_pago:    new Date().toISOString().split('T')[0],
       meses_pagados: 1,
       monto:         '',
       notas:         '',
     })
+  }
+
+  async function cancelarPago() {
+    setCancelando(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/admin/pagos/${modal.pago.id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        setError(d.error || 'Error al cancelar el pago.')
+        setCancelando(false)
+        return
+      }
+      setModal(null)
+      await cargar()
+    } catch {
+      setError('Error de conexión.')
+    }
+    setCancelando(false)
   }
 
   async function guardar() {
@@ -218,6 +240,36 @@ export default function Contabilidad() {
                 <p className="text-xs text-zinc-500">Todavía no tiene ningún pago registrado.</p>
               )}
             </div>
+
+            {modal.pago && (
+              confirmCancelar ? (
+                <div className="bg-pink-500/10 border border-pink-500/30 rounded-xl p-3 space-y-2">
+                  <p className="text-xs text-foreground">¿Cancelar este pago? Se borra y la alumna queda con el registro anterior (o sin registro, si era el único).</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setConfirmCancelar(false)}
+                      className="flex-1 py-1.5 rounded-lg border border-border text-xs text-zinc-500 hover:text-foreground transition-colors"
+                    >
+                      No, dejarlo
+                    </button>
+                    <button
+                      onClick={cancelarPago}
+                      disabled={cancelando}
+                      className="flex-1 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold disabled:opacity-50 transition-colors"
+                    >
+                      {cancelando ? 'Cancelando...' : 'Sí, cancelar pago'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmCancelar(true)}
+                  className="text-xs text-pink-400 hover:text-pink-300 transition-colors"
+                >
+                  Cancelar este pago →
+                </button>
+              )
+            )}
 
             <div className="border-t border-border pt-4">
               <p className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Registrar nuevo pago</p>
