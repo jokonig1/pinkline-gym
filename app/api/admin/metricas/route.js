@@ -40,6 +40,7 @@ export async function GET() {
     { data: asistenciasHistoricas },
     { data: costosRegistros },
     { data: pagosRegistros },
+    { data: costosVariablesRegistros },
   ] = await Promise.all([
     supabaseAdmin.from('alumnos').select('id, activo, plan, tipo_clase, coach_id, created_at'),
     supabaseAdmin.from('alumno_horarios').select('alumno_id, dia, hora').eq('activo', true).is('fecha', null),
@@ -73,6 +74,10 @@ export async function GET() {
       .catch(() => ({ data: null })),
     supabaseAdmin.from('pagos_alumnos')
       .select('alumno_id, fecha_pago, monto')
+      .then(({ data }) => ({ data }))
+      .catch(() => ({ data: null })),
+    supabaseAdmin.from('costos_variables_mensuales')
+      .select('año, mes, total')
       .then(({ data }) => ({ data }))
       .catch(() => ({ data: null })),
   ])
@@ -190,6 +195,13 @@ export async function GET() {
     return prev?.total ?? COSTOS_DEFAULT
   }
 
+  // Costos variables: a diferencia de los fijos, NO heredan plantilla del mes
+  // anterior -- si no hay registro exacto para ese mes, son 0.
+  function getCostosVariablesForMonth(año, mes) {
+    const exact = (costosVariablesRegistros || []).find(r => r.año === año && r.mes === mes)
+    return exact?.total ?? 0
+  }
+
   // ── Histórico mensual (últimos 6 meses) ──────────────────────────────────────
   const mesesLabel = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
 
@@ -219,7 +231,8 @@ export async function GET() {
     // Ingresos reales ese mes (suma de pagos marcados como pagado en Contabilidad)
     const ingresos = ingresosDePeriodo(year, month + 1)
 
-    const costos = getCostosForMonth(year, month + 1, costosRegistros)
+    const costos          = getCostosForMonth(year, month + 1, costosRegistros)
+    const costosVariables = getCostosVariablesForMonth(year, month + 1)
     return {
       mes:    mesesLabel[month],
       key,
@@ -229,17 +242,21 @@ export async function GET() {
       acumulados,
       ingresos,
       costos,
-      margen: ingresos - costos,
+      costosVariables,
+      margen: ingresos - costos - costosVariables,
     }
   })
 
-  const COSTOS_FIJOS = getCostosForMonth(today.getFullYear(), today.getMonth() + 1, costosRegistros)
+  const COSTOS_FIJOS     = getCostosForMonth(today.getFullYear(), today.getMonth() + 1, costosRegistros)
+  const COSTOS_VARIABLES = getCostosVariablesForMonth(today.getFullYear(), today.getMonth() + 1)
 
   // ── Financiero ───────────────────────────────────────────────────────────────
-  const margen        = ingresosMes - COSTOS_FIJOS
+  const margen        = ingresosMes - COSTOS_FIJOS - COSTOS_VARIABLES
   const margenPct     = ingresosMes > 0 ? Math.round((margen / ingresosMes) * 100) : 0
+  // Precio promedio por alumna: ya no se muestra como tarjeta propia, pero se
+  // sigue usando internamente para estimar el punto de equilibrio.
   const precioPromedio = activos.length > 0 ? Math.round(ingresosMes / activos.length) : 0
-  const puntoEquilibrio = precioPromedio > 0 ? Math.ceil(COSTOS_FIJOS / precioPromedio) : null
+  const puntoEquilibrio = precioPromedio > 0 ? Math.ceil((COSTOS_FIJOS + COSTOS_VARIABLES) / precioPromedio) : null
 
   // ── Tasa de retención = activos / total ───────────────────────────────────────
   const tasaRetencion = (alumnos || []).length > 0
@@ -292,10 +309,10 @@ export async function GET() {
     // Bloque Financiero
     ingresosMes,
     ingresosMesAnterior,
-    costosFijos:    COSTOS_FIJOS,
+    costosFijos:      COSTOS_FIJOS,
+    costosVariables:  COSTOS_VARIABLES,
     margen,
     margenPct,
-    precioPromedio,
     puntoEquilibrio,
 
     // Bloque Coaches
