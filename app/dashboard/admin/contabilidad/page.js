@@ -305,11 +305,14 @@ export default function Contabilidad() {
                 <div>
                   <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1">Monto pagado</label>
                   <input
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="numeric"
                     placeholder="$"
-                    value={form.monto}
-                    onChange={e => setForm(f => ({ ...f, monto: e.target.value }))}
+                    value={form.monto === '' ? '' : '$' + Number(form.monto).toLocaleString('es-CL')}
+                    onChange={e => {
+                      const raw = e.target.value.replace(/\D/g, '')
+                      setForm(f => ({ ...f, monto: raw === '' ? '' : raw }))
+                    }}
                     className="w-full bg-raised border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-600 transition-colors"
                   />
                 </div>
