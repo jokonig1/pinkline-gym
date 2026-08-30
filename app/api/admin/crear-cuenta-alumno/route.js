@@ -35,9 +35,10 @@ export async function POST(request) {
   })
 
   if (error) {
-    const yaExiste = /already registered|already exists/i.test(error.message)
+    console.error('Error al crear cuenta de alumno:', error)
+    const yaExiste = /already.*registered|already exists|duplicate/i.test(error.message)
     return Response.json(
-      { error: yaExiste ? 'Ya existe una cuenta con ese correo.' : 'No se pudo crear la cuenta del alumno.' },
+      { error: yaExiste ? 'Ya existe una cuenta con ese correo.' : `No se pudo crear la cuenta del alumno: ${error.message}` },
       { status: 400 }
     )
   }
