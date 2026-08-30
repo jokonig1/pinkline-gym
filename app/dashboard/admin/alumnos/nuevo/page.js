@@ -19,7 +19,7 @@ function Field({ label, name, type = 'text', required = false, value, onChange }
       </label>
       {type === 'date' ? (
         <DateInput
-          value={value} onChange={onChange} required={required}
+          name={name} value={value} onChange={onChange} required={required}
           className="w-full bg-raised border border-border text-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-600 transition-colors"
         />
       ) : (
