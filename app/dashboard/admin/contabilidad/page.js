@@ -101,11 +101,16 @@ export default function Contabilidad() {
   const vencidas    = alumnas.filter(a => a.estado === 'vencido')
   const alDia       = alumnas.filter(a => a.estado === 'al_dia')
 
-  const filtradas = alumnas.filter(a => {
-    const matchBusqueda = a.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    const matchEstado = filtroEstado === 'todos' || filtroEstado === a.estado
-    return matchBusqueda && matchEstado
-  })
+  // Orden de urgencia: las que necesitan atención primero, "al día" al final.
+  const ORDEN_ESTADO = { vencido: 0, sin_registro: 1, por_vencer: 2, al_dia: 3 }
+
+  const filtradas = alumnas
+    .filter(a => {
+      const matchBusqueda = a.nombre.toLowerCase().includes(busqueda.toLowerCase())
+      const matchEstado = filtroEstado === 'todos' || filtroEstado === a.estado
+      return matchBusqueda && matchEstado
+    })
+    .sort((a, b) => ORDEN_ESTADO[a.estado] - ORDEN_ESTADO[b.estado] || a.nombre.localeCompare(b.nombre))
 
   if (loading) return <LoadingSpinner />
 
@@ -137,64 +142,6 @@ export default function Contabilidad() {
           <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Sin registro</div>
         </div>
       </div>
-
-      {/* Avisos, del más urgente al menos urgente */}
-      {vencidas.length > 0 && (
-        <div className="mb-3 bg-pink-500/10 border border-pink-500/30 rounded-xl px-4 py-3 flex items-start gap-3">
-          <span className="text-pink-400 text-lg leading-none shrink-0">⛔</span>
-          <div className="flex-1 text-sm leading-relaxed">
-            <span className="font-bold text-foreground">
-              {vencidas.length} alumna{vencidas.length !== 1 ? 's' : ''} con el pago vencido:
-            </span>{' '}
-            {vencidas.map((a, i) => (
-              <span key={a.id}>
-                <button onClick={() => abrirModal(a)} className="text-pink-400 hover:text-pink-300 underline underline-offset-2 transition-colors">
-                  {a.nombre}
-                </button>
-                {i < vencidas.length - 1 ? ', ' : ''}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {porVencer.length > 0 && (
-        <div className="mb-3 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 flex items-start gap-3">
-          <span className="text-amber-500 text-lg leading-none shrink-0">⚠</span>
-          <div className="flex-1 text-sm leading-relaxed">
-            <span className="font-bold text-foreground">
-              {porVencer.length} alumna{porVencer.length !== 1 ? 's' : ''} por vencer en 3 días o menos:
-            </span>{' '}
-            {porVencer.map((a, i) => (
-              <span key={a.id}>
-                <button onClick={() => abrirModal(a)} className="text-amber-500 hover:text-amber-400 underline underline-offset-2 transition-colors">
-                  {a.nombre} ({a.diasParaVencer === 0 ? 'hoy' : `${a.diasParaVencer}d`})
-                </button>
-                {i < porVencer.length - 1 ? ', ' : ''}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {sinRegistro.length > 0 && (
-        <div className="mb-4 bg-zinc-500/10 border border-zinc-500/30 rounded-xl px-4 py-3 flex items-start gap-3">
-          <span className="text-zinc-400 text-lg leading-none shrink-0">◌</span>
-          <div className="flex-1 text-sm leading-relaxed">
-            <span className="font-bold text-foreground">
-              {sinRegistro.length} alumna{sinRegistro.length !== 1 ? 's' : ''} sin ningún pago registrado:
-            </span>{' '}
-            {sinRegistro.map((a, i) => (
-              <span key={a.id}>
-                <button onClick={() => abrirModal(a)} className="text-zinc-400 hover:text-zinc-300 underline underline-offset-2 transition-colors">
-                  {a.nombre}
-                </button>
-                {i < sinRegistro.length - 1 ? ', ' : ''}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-2 mb-4">
