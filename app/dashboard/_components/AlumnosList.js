@@ -269,21 +269,24 @@ export default function AlumnosList({
     setEliminando(false)
   }
 
-  const alumnosFiltrados = alumnos.filter(a => {
-    const q = busqueda.toLowerCase()
-    const matchBusqueda =
-      a.nombre?.toLowerCase().includes(q) ||
-      a.email?.toLowerCase().includes(q) ||
-      a.rut?.includes(q)
-    const matchEstado =
-      filtroEstado === 'todos'   ? true :
-      filtroEstado === 'activos' ? a.activo :
-      !a.activo
-    const matchPlan  = filtroPlan  === 'todos' || a.plan      === filtroPlan
-    const matchTipo  = filtroTipo  === 'todos' || (a.tipo_clase || 'Semi Personalizado') === filtroTipo
-    const matchCoach = filtroCoach === 'todos' || a.coach_id  === filtroCoach
-    return matchBusqueda && matchEstado && matchPlan && matchTipo && matchCoach
-  })
+  const alumnosFiltrados = alumnos
+    .filter(a => {
+      const q = busqueda.toLowerCase()
+      const matchBusqueda =
+        a.nombre?.toLowerCase().includes(q) ||
+        a.email?.toLowerCase().includes(q) ||
+        a.rut?.includes(q)
+      const matchEstado =
+        filtroEstado === 'todos'   ? true :
+        filtroEstado === 'activos' ? a.activo :
+        !a.activo
+      const matchPlan  = filtroPlan  === 'todos' || a.plan      === filtroPlan
+      const matchTipo  = filtroTipo  === 'todos' || (a.tipo_clase || 'Semi Personalizado') === filtroTipo
+      const matchCoach = filtroCoach === 'todos' || a.coach_id  === filtroCoach
+      return matchBusqueda && matchEstado && matchPlan && matchTipo && matchCoach
+    })
+    // Inactivos al final de la lista, sin alterar el orden dentro de cada grupo.
+    .sort((a, b) => (b.activo === a.activo ? 0 : b.activo ? 1 : -1))
 
   if (loading) return <LoadingSpinner />
 
