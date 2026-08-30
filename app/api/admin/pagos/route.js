@@ -2,18 +2,43 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import { requireAuth } from '@/lib/auth'
 import { pagoAlumnoSchema, parseBody } from '@/lib/schemas'
 
+const DIA_MS = 24 * 60 * 60 * 1000
+
+// Suma `meses` a una fecha "YYYY-MM-DD" y devuelve el resultado en el mismo formato.
+function sumarMeses(fechaStr, meses) {
+  const [y, m, d] = fechaStr.split('-').map(Number)
+  const venc = new Date(y, m - 1 + meses, d)
+  return `${venc.getFullYear()}-${String(venc.getMonth() + 1).padStart(2, '0')}-${String(venc.getDate()).padStart(2, '0')}`
+}
+
+function hoyStr() {
+  const h = new Date()
+  return `${h.getFullYear()}-${String(h.getMonth() + 1).padStart(2, '0')}-${String(h.getDate()).padStart(2, '0')}`
+}
+
+// Estado de una alumna según su pago más reciente:
+// - sin_registro: nunca pagó
+// - vencido: su cobertura ya pasó
+// - por_vencer: vence en 3 días o menos
+// - al_dia: todo bien
+function calcularEstado(pago) {
+  if (!pago) return { estado: 'sin_registro', diasParaVencer: null }
+  const hoy = new Date(hoyStr() + 'T00:00:00')
+  const venc = new Date(pago.fecha_vencimiento + 'T00:00:00')
+  const dias = Math.round((venc - hoy) / DIA_MS)
+  if (dias < 0)  return { estado: 'vencido',    diasParaVencer: dias }
+  if (dias <= 3) return { estado: 'por_vencer', diasParaVencer: dias }
+  return { estado: 'al_dia', diasParaVencer: dias }
+}
+
 /**
- * GET /api/admin/pagos?año=2026&mes=7
- * Devuelve todas las alumnas activas con su registro de pago de ese mes
- * (o null si todavía no se cargó ninguno).
+ * GET /api/admin/pagos
+ * Devuelve todas las alumnas activas con su pago más reciente (por fecha de
+ * vencimiento) y el estado calculado: sin_registro / vencido / por_vencer / al_dia.
  */
-export async function GET(request) {
+export async function GET() {
   const { response } = await requireAuth(['admin'])
   if (response) return response
-
-  const { searchParams } = new URL(request.url)
-  const año = parseInt(searchParams.get('año')) || new Date().getFullYear()
-  const mes = parseInt(searchParams.get('mes')) || new Date().getMonth() + 1
 
   const { data: alumnas } = await supabaseAdmin
     .from('alumnos')
@@ -24,25 +49,27 @@ export async function GET(request) {
   const { data: pagos } = await supabaseAdmin
     .from('pagos_alumnos')
     .select('*')
-    .eq('año', año)
-    .eq('mes', mes)
+    .order('fecha_vencimiento', { ascending: false })
 
-  const pagoPorAlumno = {}
-  ;(pagos || []).forEach(p => { pagoPorAlumno[p.alumno_id] = p })
+  // Último pago (mayor fecha_vencimiento) por alumna.
+  const ultimoPagoPorAlumno = {}
+  ;(pagos || []).forEach(p => {
+    if (!ultimoPagoPorAlumno[p.alumno_id]) ultimoPagoPorAlumno[p.alumno_id] = p
+  })
 
-  const resultado = (alumnas || []).map(a => ({
-    ...a,
-    pago: pagoPorAlumno[a.id] || null,
-  }))
+  const resultado = (alumnas || []).map(a => {
+    const pago = ultimoPagoPorAlumno[a.id] || null
+    const { estado, diasParaVencer } = calcularEstado(pago)
+    return { ...a, pago, estado, diasParaVencer }
+  })
 
-  return Response.json({ alumnas: resultado, año, mes })
+  return Response.json({ alumnas: resultado })
 }
 
 /**
  * POST /api/admin/pagos
- * Crea o actualiza el registro de pago de una alumna para un mes dado.
- * Si mesesQueCubre > 1, replica el mismo pago (pagado/monto/fecha/notas)
- * en los meses consecutivos siguientes (ej: pagó 2 meses juntos).
+ * Registra un nuevo pago para una alumna. Calcula fecha_vencimiento a partir
+ * de fecha_pago + meses_pagados.
  */
 export async function POST(request) {
   const { response } = await requireAuth(['admin'])
@@ -51,32 +78,22 @@ export async function POST(request) {
   const { data: body, error: validationError } = parseBody(pagoAlumnoSchema, await request.json())
   if (validationError) return validationError
 
-  const { alumno_id, pagado, monto, fecha_pago, notas, mesesQueCubre = 1 } = body
-
-  const periodos = []
-  let { año, mes } = body
-  for (let i = 0; i < mesesQueCubre; i++) {
-    periodos.push({ año, mes })
-    mes += 1
-    if (mes > 12) { mes = 1; año += 1 }
-  }
-
-  const filas = periodos.map(p => ({
-    alumno_id,
-    año:        p.año,
-    mes:        p.mes,
-    pagado,
-    monto:      monto ?? null,
-    fecha_pago: fecha_pago || null,
-    notas:      notas || null,
-    updated_at: new Date().toISOString(),
-  }))
+  const { alumno_id, fecha_pago, meses_pagados, monto, notas } = body
+  const fecha_vencimiento = sumarMeses(fecha_pago, meses_pagados)
 
   const { data, error } = await supabaseAdmin
     .from('pagos_alumnos')
-    .upsert(filas, { onConflict: 'alumno_id,año,mes' })
+    .insert({
+      alumno_id,
+      fecha_pago,
+      meses_pagados,
+      fecha_vencimiento,
+      monto: monto ?? null,
+      notas: notas || null,
+    })
     .select()
+    .single()
 
   if (error) return Response.json({ error: 'Error al guardar el pago' }, { status: 500 })
-  return Response.json({ ok: true, pagos: data })
+  return Response.json({ ok: true, pago: data })
 }

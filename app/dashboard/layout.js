@@ -70,11 +70,10 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     if (!profile || profile.rol !== 'admin') return
     async function checkSinPago() {
-      const hoy = new Date()
-      const res = await fetch(`/api/admin/pagos?año=${hoy.getFullYear()}&mes=${hoy.getMonth() + 1}`)
+      const res = await fetch('/api/admin/pagos')
       if (!res.ok) return
       const data = await res.json()
-      setAvisoAlumnosSinPago((data.alumnas || []).some(a => !a.pago))
+      setAvisoAlumnosSinPago((data.alumnas || []).some(a => a.estado !== 'al_dia'))
     }
     checkSinPago()
   }, [profile])
