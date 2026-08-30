@@ -38,6 +38,7 @@ export default function AlumnosList({
   const [guardandoEdit, setGuardandoEdit]   = useState(false)
   const [errorEdit, setErrorEdit]           = useState('')
   const [capWarning, setCapWarning]         = useState(null) // { items, onConfirmar }
+  const [sinHorario, setSinHorario]         = useState([])
 
   const fetchAlumnos = useCallback(async () => {
     let query = supabase
@@ -48,7 +49,23 @@ export default function AlumnosList({
     if (coachIdFiltro) query = query.eq('coach_id', coachIdFiltro)
 
     const { data } = await query
-    setAlumnos(data || [])
+    const lista = data || []
+    setAlumnos(lista)
+
+    // Alumnos activos sin ningún horario semanal cargado (aviso en el header).
+    const idsActivos = lista.filter(a => a.activo).map(a => a.id)
+    if (idsActivos.length > 0) {
+      const { data: horarios } = await supabase
+        .from('alumno_horarios')
+        .select('alumno_id')
+        .eq('activo', true)
+        .in('alumno_id', idsActivos)
+      const conHorario = new Set((horarios || []).map(h => h.alumno_id))
+      setSinHorario(lista.filter(a => a.activo && !conHorario.has(a.id)))
+    } else {
+      setSinHorario([])
+    }
+
     setLoading(false)
   }, [coachIdFiltro])
 
@@ -293,6 +310,29 @@ export default function AlumnosList({
           </button>
         )}
       </div>
+
+      {/* Aviso: alumnos activos sin horario asignado */}
+      {sinHorario.length > 0 && (
+        <div className="mb-4 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 flex items-start gap-3">
+          <span className="text-amber-500 text-lg leading-none shrink-0">⚠</span>
+          <div className="flex-1 text-sm leading-relaxed">
+            <span className="font-bold text-foreground">
+              {sinHorario.length} alumno{sinHorario.length !== 1 ? 's' : ''} sin horario asignado:
+            </span>{' '}
+            {sinHorario.map((a, i) => (
+              <span key={a.id}>
+                <button
+                  onClick={() => router.push(rutaVer(a.id))}
+                  className="text-amber-500 hover:text-amber-400 underline underline-offset-2 transition-colors"
+                >
+                  {a.nombre}
+                </button>
+                {i < sinHorario.length - 1 ? ', ' : ''}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="space-y-2 mb-4">
