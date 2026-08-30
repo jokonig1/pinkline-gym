@@ -72,7 +72,7 @@ export async function GET() {
       .then(({ data }) => ({ data }))
       .catch(() => ({ data: null })),
     supabaseAdmin.from('pagos_alumnos')
-      .select('alumno_id, año, mes, pagado, monto')
+      .select('alumno_id, fecha_pago, monto')
       .then(({ data }) => ({ data }))
       .catch(() => ({ data: null })),
   ])
@@ -160,13 +160,14 @@ export async function GET() {
   const cancelaciones   = (excepciones || []).filter(e => e.cancelado).length
   const reagendamientos = (excepciones || []).filter(e => !e.cancelado && e.fecha_nueva).length
 
-  // Ingresos reales — suma de los pagos marcados como "pagado" en Contabilidad.
-  // Si una alumna no tiene registro de pago ese mes, no suma nada (a propósito:
-  // el ingreso refleja lo que efectivamente se cargó como pagado, no una
-  // estimación por plan).
+  // Ingresos reales — suma de los pagos de Contabilidad cuya fecha de pago cae
+  // en ese mes (ingreso reconocido cuando efectivamente entró la plata, sin
+  // importar cuántos meses cubra). Si no hay pagos cargados, no suma nada
+  // (a propósito: refleja lo que realmente se cargó, no una estimación por plan).
   function ingresosDePeriodo(año, mes) {
+    const prefijo = `${año}-${String(mes).padStart(2, '0')}`
     return (pagosRegistros || [])
-      .filter(p => p.año === año && p.mes === mes && p.pagado)
+      .filter(p => p.fecha_pago?.startsWith(prefijo))
       .reduce((sum, p) => sum + (p.monto || 0), 0)
   }
 
@@ -252,9 +253,8 @@ export async function GET() {
   // Coach de cada alumno (por id), para sumar los pagos reales del mes por coach.
   const coachIdPorAlumno = {}
   ;(alumnos || []).forEach(a => { coachIdPorAlumno[a.id] = a.coach_id })
-  const pagosMesActual = (pagosRegistros || []).filter(
-    p => p.año === today.getFullYear() && p.mes === today.getMonth() + 1 && p.pagado
-  )
+  const prefijoMesActual = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+  const pagosMesActual = (pagosRegistros || []).filter(p => p.fecha_pago?.startsWith(prefijoMesActual))
 
   const margenPorCoach = porCoachArr.map(c => {
     const coachProfile = (coaches || []).find(co => co.nombre === c.nombre)
