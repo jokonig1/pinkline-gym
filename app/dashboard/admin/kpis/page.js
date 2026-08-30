@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import LoadingSpinner from '@/app/dashboard/_components/LoadingSpinner'
 import { COLORES_COACH } from '@/lib/constants'
 import ModalCostos from './ModalCostos'
+import ModalCostosVariables from './ModalCostosVariables'
 
 function Ring({ pct, color, size = 88, stroke = 9 }) {
   const r    = (size - stroke) / 2
@@ -270,6 +271,7 @@ export default function AdminMetricas() {
   const [loading,      setLoading]      = useState(true)
   const [error,        setError]        = useState('')
   const [modalCostos,  setModalCostos]  = useState(false)
+  const [modalCostosVariables, setModalCostosVariables] = useState(false)
   const [refetchKey,   setRefetchKey]   = useState(0)
 
   useEffect(() => {
@@ -285,7 +287,7 @@ export default function AdminMetricas() {
   const {
     alumnos, asistencia, excepciones, porPlan, porCoach, sesionesRutina,
     semana, clasesEstaSemana, ingresosMes, ingresosMesAnterior, historico = [],
-    costosFijos, margen, margenPct, puntoEquilibrio, precioPromedio,
+    costosFijos, costosVariables, margen, margenPct, puntoEquilibrio,
     tasaRetencion, adherenciaRutina, asistieronMes,
   } = data
 
@@ -455,6 +457,10 @@ export default function AdminMetricas() {
             value={fmtPesos(costosFijos)} color="#f87171"
             onClick={() => setModalCostos(true)} />
 
+          <StatCard tag="Costos variables" label="Gastos puntuales de este mes"
+            value={fmtPesos(costosVariables)} color="#fb923c"
+            onClick={() => setModalCostosVariables(true)} />
+
           {/* Margen */}
           {(() => {
             const color = margen >= 0 ? '#4ade80' : '#f87171'
@@ -474,9 +480,6 @@ export default function AdminMetricas() {
               </div>
             )
           })()}
-
-          <StatCard tag="Precio prom." label="Precio promedio por alumno"
-            value={fmtPesos(precioPromedio)} color="#22d3ee" />
 
           <StatCard tag="Punto equilibrio" label="Alumnos necesarios para cubrir costos"
             value={puntoEquilibrio !== null ? `${puntoEquilibrio} alumnos` : '—'}
@@ -784,6 +787,12 @@ export default function AdminMetricas() {
       <ModalCostos
         open={modalCostos}
         onClose={() => setModalCostos(false)}
+        onSaved={() => setRefetchKey(k => k + 1)}
+      />
+
+      <ModalCostosVariables
+        open={modalCostosVariables}
+        onClose={() => setModalCostosVariables(false)}
         onSaved={() => setRefetchKey(k => k + 1)}
       />
 
