@@ -38,6 +38,7 @@ export default function NuevoAlumno() {
   const [coaches,    setCoaches]    = useState([])
   const [error,      setError]      = useState('')
   const [capWarning, setCapWarning] = useState(null) // { items, onConfirmar }
+  const [cuentaResultado, setCuentaResultado] = useState(null) // { ok, email, password, error }
   const [form,    setForm]    = useState({
     nombre: '', rut: '', fecha_nacimiento: '', telefono: '',
     email: '', direccion: '', contacto_emergencia: '',
@@ -115,6 +116,22 @@ export default function NuevoAlumno() {
           activo:    true,
         }))
       )
+    }
+
+    if (form.email) {
+      const res = await fetch('/api/admin/crear-cuenta-alumno', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email, rut: form.rut, nombre: form.nombre }),
+      })
+      const result = await res.json()
+      setLoading(false)
+      setCuentaResultado(
+        res.ok
+          ? { ok: true, email: result.email, password: result.password }
+          : { ok: false, error: result.error }
+      )
+      return
     }
 
     router.push('/dashboard/admin/alumnos')
@@ -358,6 +375,55 @@ export default function NuevoAlumno() {
                 Agregar igual
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal resultado de la creación de cuenta */}
+      {cuentaResultado && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-surface border border-border-strong rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            {cuentaResultado.ok ? (
+              <>
+                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-green-500 text-xl">✓</span>
+                </div>
+                <h3 className="text-foreground font-bold text-base text-center mb-1">
+                  Cuenta creada
+                </h3>
+                <p className="text-sm text-zinc-500 text-center mb-4">
+                  Enviale esto a tu alumno nuevo, es su cuenta para entrar a la página:
+                </p>
+                <div className="space-y-2 mb-5">
+                  <div className="bg-raised border border-border rounded-lg px-3 py-2.5">
+                    <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Correo</div>
+                    <div className="text-sm font-medium text-foreground break-all">{cuentaResultado.email}</div>
+                  </div>
+                  <div className="bg-raised border border-border rounded-lg px-3 py-2.5">
+                    <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Contraseña</div>
+                    <div className="text-sm font-medium text-foreground">{cuentaResultado.password}</div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-amber-500 text-xl">⚠</span>
+                </div>
+                <h3 className="text-foreground font-bold text-base text-center mb-1">
+                  Alumno guardado, pero sin cuenta
+                </h3>
+                <p className="text-sm text-zinc-500 text-center mb-5">
+                  {cuentaResultado.error}
+                </p>
+              </>
+            )}
+            <button
+              onClick={() => router.push('/dashboard/admin/alumnos')}
+              className="w-full bg-pink-600 hover:bg-pink-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
+            >
+              Listo
+            </button>
           </div>
         </div>
       )}
