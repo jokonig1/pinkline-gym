@@ -15,10 +15,13 @@ export async function GET(req) {
   const coachId = searchParams.get('coach_id')
   if (!coachId) return Response.json({ error: 'coach_id requerido' }, { status: 400 })
 
-  const hoy     = new Date()
-  const diaHoy  = DIAS[hoy.getDay()]
-  // Fecha local (no toISOString/UTC): a la noche en Chile, UTC ya es "mañana".
-  const fechaHoy = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+  // Fecha de HOY en la zona horaria de Chile, no la del servidor (Vercel corre
+  // en UTC: de noche en Chile, UTC ya está en el día siguiente, y calcular
+  // "hoy" con new Date().getDay()/.getDate() sin forzar la zona da el día
+  // equivocado durante esas horas).
+  const fechaHoy = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago' }).format(new Date())
+  const [añoHoy, mesHoy, diaNumHoy] = fechaHoy.split('-').map(Number)
+  const diaHoy = DIAS[new Date(añoHoy, mesHoy - 1, diaNumHoy).getDay()]
 
   // 0. Traspasos activos hoy que me involucran (como origen o destino)
   const { data: traspasosHoy } = await supabaseAdmin
