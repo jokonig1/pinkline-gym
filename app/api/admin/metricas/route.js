@@ -39,6 +39,7 @@ export async function GET() {
     { data: alumnosNuevosMes },
     { data: asistenciasHistoricas },
     { data: costosRegistros },
+    { data: pagosRegistros },
   ] = await Promise.all([
     supabaseAdmin.from('alumnos').select('id, activo, plan, tipo_clase, coach_id, created_at'),
     supabaseAdmin.from('alumno_horarios').select('alumno_id, dia, hora').eq('activo', true).is('fecha', null),
@@ -68,6 +69,10 @@ export async function GET() {
       .select('año, mes, total')
       .order('año', { ascending: true })
       .order('mes', { ascending: true })
+      .then(({ data }) => ({ data }))
+      .catch(() => ({ data: null })),
+    supabaseAdmin.from('pagos_alumnos')
+      .select('alumno_id, año, mes, pagado, monto')
       .then(({ data }) => ({ data }))
       .catch(() => ({ data: null })),
   ])
@@ -155,23 +160,20 @@ export async function GET() {
   const cancelaciones   = (excepciones || []).filter(e => e.cancelado).length
   const reagendamientos = (excepciones || []).filter(e => !e.cancelado && e.fecha_nueva).length
 
-  // Ingresos estimados del mes — precios de la landing
-  const PRECIOS = {
-    personalizado:     { '2x/sem': 160000, '3x/sem': 190000, '4x/sem': 250000 },
-    semipersonalizado: { '2x/sem': 110000, '3x/sem': 130000, '4x/sem': 150000 },
+  // Ingresos reales — suma de los pagos marcados como "pagado" en Contabilidad.
+  // Si una alumna no tiene registro de pago ese mes, no suma nada (a propósito:
+  // el ingreso refleja lo que efectivamente se cargó como pagado, no una
+  // estimación por plan).
+  function ingresosDePeriodo(año, mes) {
+    return (pagosRegistros || [])
+      .filter(p => p.año === año && p.mes === mes && p.pagado)
+      .reduce((sum, p) => sum + (p.monto || 0), 0)
   }
 
-  function precioAlumno(a) {
-    const tipoKey = (a.tipo_clase || '').toLowerCase() === 'personalizado'
-      ? 'personalizado' : 'semipersonalizado'
-    return PRECIOS[tipoKey]?.[a.plan] || 0
-  }
+  const ingresosMes = ingresosDePeriodo(today.getFullYear(), today.getMonth() + 1)
 
-  const ingresosMes = activos.reduce((sum, a) => sum + precioAlumno(a), 0)
-
-  // Mes anterior: todos los alumnos que existían antes del inicio de este mes (incluyendo los que se dieron de baja)
-  const alumnosMesAnterior = (alumnos || []).filter(a => new Date(a.created_at) < inicioMes)
-  const ingresosMesAnterior = alumnosMesAnterior.reduce((sum, a) => sum + precioAlumno(a), 0)
+  const mesAnteriorFecha = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+  const ingresosMesAnterior = ingresosDePeriodo(mesAnteriorFecha.getFullYear(), mesAnteriorFecha.getMonth() + 1)
 
   const CAPACIDAD_MAX  = 300
   const COSTOS_DEFAULT = 3190659  // suma de ítems predeterminados
@@ -213,8 +215,8 @@ export async function GET() {
     const esActual = year === today.getFullYear() && month === today.getMonth()
     const acumulados = esActual ? activos.length : alumnosMes.length
 
-    // Ingresos estimados ese mes (mes actual: solo activos; meses pasados: todos los registrados)
-    const ingresos = esActual ? ingresosMes : alumnosMes.reduce((sum, a) => sum + precioAlumno(a), 0)
+    // Ingresos reales ese mes (suma de pagos marcados como pagado en Contabilidad)
+    const ingresos = ingresosDePeriodo(year, month + 1)
 
     const costos = getCostosForMonth(year, month + 1, costosRegistros)
     return {
@@ -247,11 +249,18 @@ export async function GET() {
   const nCoaches = (coaches || []).length || 1
   const costoPorCoach = Math.round(COSTOS_FIJOS / nCoaches)
 
+  // Coach de cada alumno (por id), para sumar los pagos reales del mes por coach.
+  const coachIdPorAlumno = {}
+  ;(alumnos || []).forEach(a => { coachIdPorAlumno[a.id] = a.coach_id })
+  const pagosMesActual = (pagosRegistros || []).filter(
+    p => p.año === today.getFullYear() && p.mes === today.getMonth() + 1 && p.pagado
+  )
+
   const margenPorCoach = porCoachArr.map(c => {
     const coachProfile = (coaches || []).find(co => co.nombre === c.nombre)
-    const revenueCoach = activos
-      .filter(a => a.coach_id === coachProfile?.id)
-      .reduce((sum, a) => sum + precioAlumno(a), 0)
+    const revenueCoach = pagosMesActual
+      .filter(p => coachIdPorAlumno[p.alumno_id] === coachProfile?.id)
+      .reduce((sum, p) => sum + (p.monto || 0), 0)
     return {
       ...c,
       revenue:     revenueCoach,
