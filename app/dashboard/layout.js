@@ -11,6 +11,7 @@ export default function DashboardLayout({ children }) {
   const [profile,     setProfile]     = useState(null)
   const [loading,     setLoading]     = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [avisoAlumnosSinHorario, setAvisoAlumnosSinHorario] = useState(false)
   const { theme, toggle } = useTheme()
 
   useEffect(() => {
@@ -39,6 +40,29 @@ export default function DashboardLayout({ children }) {
     }
     getProfile()
   }, [router])
+
+  // Aviso en el menú lateral: ¿hay alumnos activos sin ningún horario cargado?
+  // Admin ve todos, coach solo los suyos.
+  useEffect(() => {
+    if (!profile || (profile.rol !== 'admin' && profile.rol !== 'coach')) return
+    const supabase = createClient()
+    async function checkSinHorario() {
+      let query = supabase.from('alumnos').select('id').eq('activo', true)
+      if (profile.rol === 'coach') query = query.eq('coach_id', profile.id)
+      const { data: activos } = await query
+      const ids = (activos || []).map(a => a.id)
+      if (ids.length === 0) { setAvisoAlumnosSinHorario(false); return }
+
+      const { data: horarios } = await supabase
+        .from('alumno_horarios')
+        .select('alumno_id')
+        .eq('activo', true)
+        .in('alumno_id', ids)
+      const conHorario = new Set((horarios || []).map(h => h.alumno_id))
+      setAvisoAlumnosSinHorario(ids.some(id => !conHorario.has(id)))
+    }
+    checkSinHorario()
+  }, [profile])
 
   void pathname
 
@@ -127,6 +151,8 @@ export default function DashboardLayout({ children }) {
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
           {items.map(item => {
             const isActive = pathname === item.href
+            const esItemAlumnos = item.href === '/dashboard/admin/alumnos' || item.href === '/dashboard/coach/alumnos'
+            const mostrarAviso = esItemAlumnos && avisoAlumnosSinHorario
             return (
               <button
                 key={item.href}
@@ -139,6 +165,9 @@ export default function DashboardLayout({ children }) {
               >
                 <span className="text-base">{item.icon}</span>
                 <span>{item.label}</span>
+                {mostrarAviso && (
+                  <span className="text-sm" title="Hay alumnos sin horario asignado">🚨</span>
+                )}
                 {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-pink-600" />}
               </button>
             )
