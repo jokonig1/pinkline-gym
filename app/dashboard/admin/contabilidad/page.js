@@ -46,6 +46,10 @@ export default function Contabilidad() {
   const [confirmCancelar, setConfirmCancelar] = useState(false)
   const [cancelando,      setCancelando]      = useState(false)
 
+  const [historialModal,    setHistorialModal]    = useState(null) // alumna
+  const [historialPagos,    setHistorialPagos]    = useState([])
+  const [cargandoHistorial, setCargandoHistorial] = useState(false)
+
   useEffect(() => { cargar() }, [])
 
   async function cargar() {
@@ -56,6 +60,15 @@ export default function Contabilidad() {
       setAlumnas(data.alumnas || [])
     }
     setLoading(false)
+  }
+
+  async function abrirHistorial(e, alumna) {
+    e.stopPropagation()
+    setHistorialModal(alumna)
+    setCargandoHistorial(true)
+    const res = await fetch(`/api/admin/pagos?alumno_id=${alumna.id}`)
+    setHistorialPagos(res.ok ? (await res.json()).pagos : [])
+    setCargandoHistorial(false)
   }
 
   function abrirModal(alumna) {
@@ -196,10 +209,13 @@ export default function Contabilidad() {
         ) : filtradas.map(a => {
           const estilos = ESTILOS_ESTADO[a.estado]
           return (
-            <button
+            <div
               key={a.id}
+              role="button"
+              tabIndex={0}
               onClick={() => abrirModal(a)}
-              className={`w-full flex items-center justify-between gap-3 bg-surface border ${estilos.borde} rounded-xl px-4 py-3 text-left hover:bg-hover-md transition-colors`}
+              onKeyDown={e => { if (e.key === 'Enter') abrirModal(a) }}
+              className={`w-full flex items-center justify-between gap-3 bg-surface border ${estilos.borde} rounded-xl px-4 py-3 text-left hover:bg-hover-md transition-colors cursor-pointer`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${estilos.punto}`} />
@@ -208,17 +224,26 @@ export default function Contabilidad() {
                   <div className="text-xs text-zinc-500">{a.tipo_clase || 'Semi Personalizado'} · {a.plan}</div>
                 </div>
               </div>
-              <div className="text-right shrink-0">
-                <div className={`text-xs font-bold ${estilos.texto}`}>
-                  {a.estado === 'sin_registro' || a.estado === 'vencido' ? '⚠ ' : ''}{estilos.label}
-                </div>
-                {a.pago && (
-                  <div className="text-xs text-zinc-500">
-                    {a.estado === 'vencido' ? 'Venció' : 'Vence'} {fmtFecha(a.pago.fecha_vencimiento)}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="text-right">
+                  <div className={`text-xs font-bold ${estilos.texto}`}>
+                    {a.estado === 'sin_registro' || a.estado === 'vencido' ? '⚠ ' : ''}{estilos.label}
                   </div>
-                )}
+                  {a.pago && (
+                    <div className="text-xs text-zinc-500">
+                      {a.estado === 'vencido' ? 'Venció' : 'Vence'} {fmtFecha(a.pago.fecha_vencimiento)}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={e => abrirHistorial(e, a)}
+                  title="Ver historial de pagos"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:text-foreground hover:bg-hover-md transition-colors shrink-0"
+                >
+                  ⋮
+                </button>
               </div>
-            </button>
+            </div>
           )
         })}
       </div>
@@ -347,6 +372,54 @@ export default function Contabilidad() {
                 {guardando ? 'Guardando...' : 'Registrar pago'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal historial de pagos */}
+      {historialModal && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          onClick={e => { if (e.target === e.currentTarget) setHistorialModal(null) }}
+        >
+          <div className="bg-surface border border-border-strong rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-black text-foreground">{historialModal.nombre}</h3>
+                <p className="text-xs text-zinc-500">Historial de pagos</p>
+              </div>
+              <button
+                onClick={() => setHistorialModal(null)}
+                className="text-zinc-500 hover:text-foreground p-1.5 rounded-lg hover:bg-hover-md transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {cargandoHistorial ? (
+              <p className="text-xs text-zinc-500 text-center py-6">Cargando...</p>
+            ) : historialPagos.length === 0 ? (
+              <p className="text-xs text-zinc-500 text-center py-6">Todavía no tiene ningún pago registrado.</p>
+            ) : (
+              <div className="space-y-2">
+                {historialPagos.map(p => (
+                  <div key={p.id} className="bg-raised border border-border rounded-xl p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-foreground">{fmtFecha(p.fecha_pago)}</span>
+                      <span className="text-sm font-bold text-pink-400">{fmtPesos(p.monto)}</span>
+                    </div>
+                    <div className="text-xs text-zinc-500 mt-0.5">
+                      {p.meses_pagados} mes{p.meses_pagados > 1 ? 'es' : ''} · cubre hasta {fmtFecha(p.fecha_vencimiento)}
+                    </div>
+                    {p.notas && (
+                      <div className="text-xs text-zinc-400 mt-2 pt-2 border-t border-border italic">
+                        &ldquo;{p.notas}&rdquo;
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
