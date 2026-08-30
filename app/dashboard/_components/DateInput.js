@@ -3,11 +3,12 @@
 // Input de fecha con ícono propio (SVG) en vez del ícono nativo del navegador,
 // que en mobile se ve como emoji a color y en desktop como ícono monocromo —
 // mismo problema que tenía el toggle de tema, mismo tipo de solución.
-export default function DateInput({ value, onChange, min, max, required, className, wrapperClassName }) {
+export default function DateInput({ name, value, onChange, min, max, required, className, wrapperClassName }) {
   return (
     <div className={wrapperClassName || 'relative'}>
       <input
         type="date"
+        name={name}
         value={value}
         onChange={onChange}
         min={min}
