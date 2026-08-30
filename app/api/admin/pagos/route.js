@@ -32,13 +32,27 @@ function calcularEstado(pago) {
 }
 
 /**
- * GET /api/admin/pagos
- * Devuelve todas las alumnas activas con su pago más reciente (por fecha de
- * vencimiento) y el estado calculado: sin_registro / vencido / por_vencer / al_dia.
+ * GET /api/admin/pagos?alumno_id=X
+ * Con alumno_id: devuelve el historial completo de pagos de esa alumna
+ * (más reciente primero).
+ * Sin alumno_id: devuelve todas las alumnas activas con su pago más
+ * reciente y el estado calculado: sin_registro / vencido / por_vencer / al_dia.
  */
-export async function GET() {
+export async function GET(request) {
   const { response } = await requireAuth(['admin'])
   if (response) return response
+
+  const { searchParams } = new URL(request.url)
+  const alumnoId = searchParams.get('alumno_id')
+
+  if (alumnoId) {
+    const { data: historial } = await supabaseAdmin
+      .from('pagos_alumnos')
+      .select('*')
+      .eq('alumno_id', alumnoId)
+      .order('fecha_pago', { ascending: false })
+    return Response.json({ pagos: historial || [] })
+  }
 
   const { data: alumnas } = await supabaseAdmin
     .from('alumnos')
