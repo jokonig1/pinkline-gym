@@ -12,6 +12,7 @@ export default function DashboardLayout({ children }) {
   const [loading,     setLoading]     = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [avisoAlumnosSinHorario, setAvisoAlumnosSinHorario] = useState(false)
+  const [avisoAlumnosSinPago,    setAvisoAlumnosSinPago]    = useState(false)
   const { theme, toggle } = useTheme()
 
   useEffect(() => {
@@ -64,6 +65,20 @@ export default function DashboardLayout({ children }) {
     checkSinHorario()
   }, [profile])
 
+  // Aviso en el menú lateral: ¿hay alumnas activas sin registro de pago este mes?
+  // Solo admin, la sección de Contabilidad es admin-only.
+  useEffect(() => {
+    if (!profile || profile.rol !== 'admin') return
+    async function checkSinPago() {
+      const hoy = new Date()
+      const res = await fetch(`/api/admin/pagos?año=${hoy.getFullYear()}&mes=${hoy.getMonth() + 1}`)
+      if (!res.ok) return
+      const data = await res.json()
+      setAvisoAlumnosSinPago((data.alumnas || []).some(a => !a.pago))
+    }
+    checkSinPago()
+  }, [profile])
+
   void pathname
 
   async function handleLogout() {
@@ -87,6 +102,7 @@ export default function DashboardLayout({ children }) {
       { label: 'Rutinas',   icon: '◈', href: '/dashboard/admin/rutinas' },
       { label: 'Traspasos', icon: '⇄', href: '/dashboard/admin/traspasos' },
       { label: 'Métricas',  icon: '▲', href: '/dashboard/admin/kpis' },
+      { label: 'Contabilidad', icon: '$', href: '/dashboard/admin/contabilidad' },
       { label: 'Mi perfil', icon: '●', href: '/dashboard/admin/perfil' },
     ],
     coach: [
@@ -152,7 +168,8 @@ export default function DashboardLayout({ children }) {
           {items.map(item => {
             const isActive = pathname === item.href
             const esItemAlumnos = item.href === '/dashboard/admin/alumnos' || item.href === '/dashboard/coach/alumnos'
-            const mostrarAviso = esItemAlumnos && avisoAlumnosSinHorario
+            const esItemContabilidad = item.href === '/dashboard/admin/contabilidad'
+            const mostrarAviso = (esItemAlumnos && avisoAlumnosSinHorario) || (esItemContabilidad && avisoAlumnosSinPago)
             return (
               <button
                 key={item.href}
