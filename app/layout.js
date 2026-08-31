@@ -2,7 +2,7 @@ import './globals.css'
 import { ThemeProvider } from './providers'
 
 export const metadata = {
-  metadataBase: new URL('https://pinkline-gym.vercel.app'),
+  metadataBase: new URL('https://pinklinegym.com'),
   title: 'Pinkline Gimnasio',
   description: 'Entrenamiento personalizado exclusivo para mujeres.',
   icons: { icon: '/imagenes pinkline/Pinkline-iso-rosado.svg' },
